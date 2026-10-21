@@ -7,7 +7,13 @@
     "node": ">=22"
   },
   "scripts": {
-    "typecheck": "pnpm -r typecheck"
+    "dev": "pnpm --parallel --filter @cue/api --filter @cue/worker --filter @cue/web dev",
+    "typecheck": "pnpm -r typecheck",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "db:generate": "pnpm --filter @cue/db generate",
+    "db:migrate": "pnpm --filter @cue/db migrate",
+    "db:studio": "pnpm --filter @cue/db studio"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
