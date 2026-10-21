@@ -1,4 +1,6 @@
+import { sql } from "drizzle-orm";
 import {
+  customType,
   index,
   integer,
   pgEnum,
@@ -8,6 +10,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  vector,
 } from "drizzle-orm/pg-core";
 
 export const sourceType = pgEnum("source_type", ["upload", "url"]);
@@ -63,5 +66,37 @@ export const stageRuns = pgTable(
   (t) => [
     uniqueIndex("stage_runs_video_stage_key").on(t.videoId, t.stage),
     index("stage_runs_status_idx").on(t.status),
+  ],
+);
+
+const tsvector = customType<{ data: string }>({ dataType: () => "tsvector" });
+
+export const segments = pgTable(
+  "segments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    idx: integer("idx").notNull(),
+    startMs: integer("start_ms").notNull(),
+    endMs: integer("end_ms").notNull(),
+    keyframeKey: text("keyframe_key"),
+    transcriptText: text("transcript_text"),
+    ocrText: text("ocr_text"),
+    searchTsv: tsvector("search_tsv").generatedAlwaysAs(
+      sql`to_tsvector('english', coalesce(transcript_text, '') || ' ' || coalesce(ocr_text, ''))`,
+    ),
+    textEmbedding: vector("text_embedding", { dimensions: 1536 }),
+    visualEmbedding: vector("visual_embedding", { dimensions: 1024 }),
+    ocrEmbedding: vector("ocr_embedding", { dimensions: 1536 }),
+    ...timestamps,
+  },
+  (t) => [
+    uniqueIndex("segments_video_idx_key").on(t.videoId, t.idx),
+    index("segments_search_tsv_idx").using("gin", t.searchTsv),
+    index("segments_text_embedding_idx").using("hnsw", t.textEmbedding.op("vector_cosine_ops")),
+    index("segments_visual_embedding_idx").using("hnsw", t.visualEmbedding.op("vector_cosine_ops")),
+    index("segments_ocr_embedding_idx").using("hnsw", t.ocrEmbedding.op("vector_cosine_ops")),
   ],
 );
