@@ -1,10 +1,12 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   customType,
   index,
   integer,
   pgEnum,
   pgTable,
+  primaryKey,
   real,
   text,
   timestamp,
@@ -16,6 +18,7 @@ import {
 export const sourceType = pgEnum("source_type", ["upload", "url"]);
 export const videoStatus = pgEnum("video_status", ["pending", "processing", "ready", "failed"]);
 export const stage = pgEnum("stage", ["decode", "segment", "transcribe", "see", "index"]);
+export const embeddingKind = pgEnum("embedding_kind", ["text", "image"]);
 export const runStatus = pgEnum("run_status", ["queued", "running", "done", "failed"]);
 
 const timestamps = {
@@ -99,4 +102,47 @@ export const segments = pgTable(
     index("segments_visual_embedding_idx").using("hnsw", t.visualEmbedding.op("vector_cosine_ops")),
     index("segments_ocr_embedding_idx").using("hnsw", t.ocrEmbedding.op("vector_cosine_ops")),
   ],
+);
+
+export const transcriptWords = pgTable(
+  "transcript_words",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    segmentId: uuid("segment_id").references(() => segments.id, { onDelete: "set null" }),
+    startMs: integer("start_ms").notNull(),
+    endMs: integer("end_ms").notNull(),
+    word: text("word").notNull(),
+    confidence: real("confidence"),
+  },
+  (t) => [index("transcript_words_video_start_idx").on(t.videoId, t.startMs)],
+);
+
+export const frames = pgTable(
+  "frames",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    videoId: uuid("video_id")
+      .notNull()
+      .references(() => videos.id, { onDelete: "cascade" }),
+    segmentId: uuid("segment_id").references(() => segments.id, { onDelete: "set null" }),
+    tsMs: integer("ts_ms").notNull(),
+    storageKey: text("storage_key").notNull(),
+    isKeyframe: boolean("is_keyframe").notNull().default(false),
+  },
+  (t) => [uniqueIndex("frames_video_ts_key").on(t.videoId, t.tsMs)],
+);
+
+export const embeddingCache = pgTable(
+  "embedding_cache",
+  {
+    contentHash: text("content_hash").notNull(),
+    model: text("model").notNull(),
+    kind: embeddingKind("kind").notNull(),
+    embedding: real("embedding").array().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.contentHash, t.model, t.kind] })],
 );
