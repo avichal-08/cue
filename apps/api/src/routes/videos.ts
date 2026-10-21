@@ -64,3 +64,33 @@ videos.post("/:id/complete", async (req, res) => {
   await enqueueIngest(video.id);
   res.json({ videoId: video.id, duplicate: false });
 });
+
+const urlBody = z.object({
+  url: z.string().url().refine((u) => /^https?:/.test(u), "http(s) only"),
+  title: z.string().min(1).max(200).optional(),
+});
+
+videos.post("/url", async (req, res) => {
+  const body = urlBody.parse(req.body);
+
+  const [existing] = await db
+    .select({ id: videosTable.id })
+    .from(videosTable)
+    .where(eq(videosTable.sourceUrl, body.url))
+    .limit(1);
+  if (existing) {
+    res.json({ videoId: existing.id, duplicate: true });
+    return;
+  }
+
+  const id = randomUUID();
+  await db.insert(videosTable).values({
+    id,
+    title: body.title ?? body.url,
+    sourceType: "url",
+    sourceUrl: body.url,
+  });
+
+  await enqueueIngest(id);
+  res.status(201).json({ videoId: id, duplicate: false });
+});

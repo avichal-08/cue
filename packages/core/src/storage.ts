@@ -7,6 +7,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { env } from "./env";
 
@@ -27,6 +28,13 @@ const bucket = () => env().S3_BUCKET;
 
 export async function putObject(key: string, body: Buffer | Uint8Array | string, contentType?: string) {
   await s3().send(new PutObjectCommand({ Bucket: bucket(), Key: key, Body: body, ContentType: contentType }));
+}
+
+export async function uploadStream(key: string, body: Readable, contentType?: string) {
+  await new Upload({
+    client: s3(),
+    params: { Bucket: bucket(), Key: key, Body: body, ContentType: contentType },
+  }).done();
 }
 
 export async function getObject(key: string): Promise<Buffer> {

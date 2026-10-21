@@ -13,6 +13,7 @@ const schema = z.object({
   S3_BUCKET: z.string().default("cue"),
   S3_ACCESS_KEY: z.string().default("cue"),
   S3_SECRET_KEY: z.string().default("cuecuecue"),
+  YTDLP_PATH: z.string().default("yt-dlp"),
   API_PORT: z.coerce.number().int().default(4000),
   OPENAI_API_KEY: z.string().optional(),
   VOYAGE_API_KEY: z.string().optional(),

@@ -1,5 +1,6 @@
 import type { Job } from "bullmq";
 import type { Stage, StageJob } from "@cue/core";
+import { fetchSource } from "./source";
 
 export type Handler = (job: Job<StageJob>) => Promise<void>;
 
@@ -8,7 +9,10 @@ const stub: Handler = async (job) => {
 };
 
 export const handlers: Record<Stage, Handler> = {
-  decode: stub,
+  decode: async (job) => {
+    await fetchSource(job.data.videoId);
+    await stub(job);
+  },
   segment: stub,
   transcribe: stub,
   see: stub,

@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@cue/core": "workspace:*",
-    "bullmq": "^6.3.19"
+    "@cue/db": "workspace:*",
+    "bullmq": "^6.3.19",
+    "drizzle-orm": "^0.44.7"
   }
 }
