@@ -2,9 +2,9 @@ import { randomUUID } from "node:crypto";
 import { extname } from "node:path";
 import { Router } from "express";
 import { z } from "zod";
-import { deleteObject, hashObject, objectExists, presignPut } from "@cue/core";
-import { claimContentHash, db, videos as videosTable } from "@cue/db";
-import { eq } from "drizzle-orm";
+import { deleteObject, hashObject, objectExists, presignGet, presignPut } from "@cue/core";
+import { claimContentHash, db, stageRuns, videos as videosTable } from "@cue/db";
+import { asc, desc, eq } from "drizzle-orm";
 import { HttpError } from "../errors";
 import { enqueueIngest } from "../queue";
 
@@ -93,4 +93,64 @@ videos.post("/url", async (req, res) => {
 
   await enqueueIngest(id);
   res.status(201).json({ videoId: id, duplicate: false });
+});
+
+const listQuery = z.object({
+  limit: z.coerce.number().int().min(1).max(100).default(50),
+  offset: z.coerce.number().int().min(0).default(0),
+});
+
+const summary = {
+  id: videosTable.id,
+  title: videosTable.title,
+  sourceType: videosTable.sourceType,
+  sourceUrl: videosTable.sourceUrl,
+  status: videosTable.status,
+  durationMs: videosTable.durationMs,
+  error: videosTable.error,
+  createdAt: videosTable.createdAt,
+};
+
+videos.get("/", async (req, res) => {
+  const { limit, offset } = listQuery.parse(req.query);
+  const rows = await db
+    .select(summary)
+    .from(videosTable)
+    .orderBy(desc(videosTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+  res.json({ videos: rows, limit, offset });
+});
+
+videos.get("/:id", async (req, res) => {
+  const video = await getVideo(req.params.id);
+  const stages = await db
+    .select({
+      stage: stageRuns.stage,
+      status: stageRuns.status,
+      progress: stageRuns.progress,
+      attempts: stageRuns.attempts,
+      error: stageRuns.error,
+      startedAt: stageRuns.startedAt,
+      finishedAt: stageRuns.finishedAt,
+    })
+    .from(stageRuns)
+    .where(eq(stageRuns.videoId, video.id))
+    .orderBy(asc(stageRuns.stage));
+
+  res.json({
+    id: video.id,
+    title: video.title,
+    sourceType: video.sourceType,
+    sourceUrl: video.sourceUrl,
+    status: video.status,
+    error: video.error,
+    durationMs: video.durationMs,
+    width: video.width,
+    height: video.height,
+    fps: video.fps,
+    createdAt: video.createdAt,
+    playbackUrl: video.contentHash && video.storageKey ? await presignGet(video.storageKey) : null,
+    stages,
+  });
 });
