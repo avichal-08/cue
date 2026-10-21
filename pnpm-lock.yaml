@@ -40,6 +40,15 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6
 
+  apps/worker:
+    dependencies:
+      '@cue/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      bullmq:
+        specifier: ^6.3.19
+        version: 6.3.19(ioredis@6.0.0)
+
   packages/core:
     dependencies:
       '@aws-sdk/client-s3':
