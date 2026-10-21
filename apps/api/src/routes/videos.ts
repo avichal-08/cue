@@ -2,8 +2,10 @@ import { randomUUID } from "node:crypto";
 import { extname } from "node:path";
 import { Router } from "express";
 import { z } from "zod";
-import { presignPut } from "@cue/core";
-import { db, videos as videosTable } from "@cue/db";
+import { deleteObject, hashObject, objectExists, presignPut } from "@cue/core";
+import { claimContentHash, db, videos as videosTable } from "@cue/db";
+import { eq } from "drizzle-orm";
+import { HttpError } from "../errors";
 
 export const videos = Router();
 
@@ -29,4 +31,33 @@ videos.post("/uploads", async (req, res) => {
 
   const uploadUrl = await presignPut(storageKey, body.contentType);
   res.status(201).json({ videoId: id, uploadUrl });
+});
+
+async function getVideo(id: string) {
+  if (!z.string().uuid().safeParse(id).success) throw new HttpError(404, "video not found");
+  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
+  if (!video) throw new HttpError(404, "video not found");
+  return video;
+}
+
+videos.post("/:id/complete", async (req, res) => {
+  const video = await getVideo(req.params.id);
+  if (video.contentHash) {
+    res.json({ videoId: video.id, duplicate: false });
+    return;
+  }
+  if (video.sourceType !== "upload" || !video.storageKey) throw new HttpError(409, "not an upload");
+  if (!(await objectExists(video.storageKey))) throw new HttpError(409, "upload not found in storage");
+
+  const contentHash = await hashObject(video.storageKey);
+  const existing = await claimContentHash(video.id, contentHash);
+
+  if (existing) {
+    await deleteObject(video.storageKey);
+    await db.delete(videosTable).where(eq(videosTable.id, video.id));
+    res.json({ videoId: existing, duplicate: true });
+    return;
+  }
+
+  res.json({ videoId: video.id, duplicate: false });
 });

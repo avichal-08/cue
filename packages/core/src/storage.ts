@@ -1,4 +1,7 @@
+import { createHash } from "node:crypto";
+import type { Readable } from "node:stream";
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -39,6 +42,17 @@ export async function objectExists(key: string): Promise<boolean> {
     if ((err as { name?: string }).name === "NotFound") return false;
     throw err;
   }
+}
+
+export async function deleteObject(key: string) {
+  await s3().send(new DeleteObjectCommand({ Bucket: bucket(), Key: key }));
+}
+
+export async function hashObject(key: string): Promise<string> {
+  const res = await s3().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
+  const hash = createHash("sha256");
+  for await (const chunk of res.Body as Readable) hash.update(chunk);
+  return hash.digest("hex");
 }
 
 export function presignGet(key: string, expiresIn = 3600) {
