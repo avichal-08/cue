@@ -10,6 +10,7 @@
   "dependencies": {
     "@cue/core": "workspace:*",
     "@cue/db": "workspace:*",
+    "bullmq": "^6.3.19",
     "drizzle-orm": "^0.44.7",
     "express": "^5.3.0",
     "ioredis": "^6.0.0",

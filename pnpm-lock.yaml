@@ -26,6 +26,9 @@ importers:
       '@cue/db':
         specifier: workspace:*
         version: link:../../packages/db
+      bullmq:
+        specifier: ^6.3.19
+        version: 6.3.19(ioredis@6.0.0)
       drizzle-orm:
         specifier: ^0.44.7
         version: 0.44.7(@neondatabase/serverless@1.2.0)

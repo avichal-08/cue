@@ -6,6 +6,7 @@ import { deleteObject, hashObject, objectExists, presignPut } from "@cue/core";
 import { claimContentHash, db, videos as videosTable } from "@cue/db";
 import { eq } from "drizzle-orm";
 import { HttpError } from "../errors";
+import { enqueueIngest } from "../queue";
 
 export const videos = Router();
 
@@ -43,6 +44,7 @@ async function getVideo(id: string) {
 videos.post("/:id/complete", async (req, res) => {
   const video = await getVideo(req.params.id);
   if (video.contentHash) {
+    await enqueueIngest(video.id);
     res.json({ videoId: video.id, duplicate: false });
     return;
   }
@@ -59,5 +61,6 @@ videos.post("/:id/complete", async (req, res) => {
     return;
   }
 
+  await enqueueIngest(video.id);
   res.json({ videoId: video.id, duplicate: false });
 });
