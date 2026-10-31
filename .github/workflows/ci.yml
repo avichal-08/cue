@@ -30,5 +30,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: docker compose -f infra/compose.yml up -d --wait
+      - run: docker compose -f infra/compose.yml up -d --wait redis minio
+      - run: docker compose -f infra/compose.yml run --rm minio-init
       - run: docker compose -f infra/compose.yml exec -T redis redis-cli ping | grep -q PONG

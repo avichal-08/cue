@@ -15,7 +15,7 @@
     "check": "turbo run lint typecheck test --concurrency=2",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "infra:up": "docker compose -f infra/compose.yml up -d --wait",
+    "infra:up": "docker compose -f infra/compose.yml up -d --wait redis minio && docker compose -f infra/compose.yml run --rm minio-init",
     "infra:down": "docker compose -f infra/compose.yml down",
     "db:generate": "pnpm --filter @cue/db generate",
     "db:migrate": "pnpm --filter @cue/db migrate",
