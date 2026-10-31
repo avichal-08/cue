@@ -17,6 +17,8 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/express": "^5.0.6"
+    "@types/express": "^5.0.6",
+    "@cue/tsconfig": "workspace:*",
+    "@types/node": "^22.10.0"
   }
 }

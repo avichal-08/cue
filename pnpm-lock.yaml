@@ -42,9 +42,15 @@ importers:
         specifier: ^3.25.76
         version: 3.25.76
     devDependencies:
+      '@cue/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       '@types/express':
         specifier: ^5.0.6
         version: 5.0.6
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.5
 
   apps/web:
     dependencies:
@@ -58,6 +64,9 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@cue/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
       '@types/react':
         specifier: ^19.3.0
         version: 19.3.0
@@ -79,6 +88,13 @@ importers:
       drizzle-orm:
         specifier: ^0.44.7
         version: 0.44.7(@neondatabase/serverless@1.2.0)
+    devDependencies:
+      '@cue/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.5
 
   packages/core:
     dependencies:
@@ -97,6 +113,13 @@ importers:
       zod:
         specifier: ^3.24.0
         version: 3.25.76
+    devDependencies:
+      '@cue/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.5
 
   packages/db:
     dependencies:
@@ -110,9 +133,17 @@ importers:
         specifier: ^0.44.0
         version: 0.44.7(@neondatabase/serverless@1.2.0)
     devDependencies:
+      '@cue/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.5
       drizzle-kit:
         specifier: ^0.31.0
         version: 0.31.11
+
+  packages/tsconfig: {}
 
 packages:
 

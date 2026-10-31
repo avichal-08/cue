@@ -14,5 +14,9 @@
     "@aws-sdk/s3-request-presigner": "^3.1154.0",
     "bullmq": "^6.3.19",
     "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@cue/tsconfig": "workspace:*",
+    "@types/node": "^22.10.0"
   }
 }

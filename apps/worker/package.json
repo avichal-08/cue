@@ -12,5 +12,9 @@
     "@cue/db": "workspace:*",
     "bullmq": "^6.3.19",
     "drizzle-orm": "^0.44.7"
+  },
+  "devDependencies": {
+    "@cue/tsconfig": "workspace:*",
+    "@types/node": "^22.10.0"
   }
 }

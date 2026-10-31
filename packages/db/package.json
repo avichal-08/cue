@@ -18,6 +18,8 @@
     "drizzle-orm": "^0.44.0"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.0"
+    "drizzle-kit": "^0.31.0",
+    "@cue/tsconfig": "workspace:*",
+    "@types/node": "^22.10.0"
   }
 }
