@@ -1,7 +1,7 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const config: NextConfig = {
-  transpilePackages: ["@cue/core"],
+  transpilePackages: ['@cue/core'],
 };
 
 export default config;

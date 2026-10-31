@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
-import Link from "next/link";
-import "./globals.css";
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Cue",
-  description: "search inside your videos",
+  title: 'Cue',
+  description: 'search inside your videos',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

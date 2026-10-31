@@ -1,6 +1,6 @@
-import type { Job } from "bullmq";
-import type { Stage, StageJob } from "@cue/core";
-import { fetchSource } from "./source";
+import type { Job } from 'bullmq';
+import type { Stage, StageJob } from '@cue/core';
+import { fetchSource } from './source';
 
 export type Handler = (job: Job<StageJob>) => Promise<void>;
 

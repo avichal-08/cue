@@ -87,6 +87,6 @@ export function registerProviders(p: Providers): void {
 }
 
 export function providers(): Providers {
-  if (!registered) throw new Error("providers not registered");
+  if (!registered) throw new Error('providers not registered');
   return registered;
 }

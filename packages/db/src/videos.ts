@@ -1,10 +1,10 @@
-import { and, eq, ne } from "drizzle-orm";
-import { db } from "./client";
-import { videos } from "./schema";
+import { and, eq, ne } from 'drizzle-orm';
+import { db } from './client';
+import { videos } from './schema';
 
 function isUniqueViolation(err: unknown): boolean {
   const e = err as { code?: string; cause?: { code?: string } };
-  return e.code === "23505" || e.cause?.code === "23505";
+  return e.code === '23505' || e.cause?.code === '23505';
 }
 
 async function findByHash(contentHash: string, excludeId: string) {
@@ -16,7 +16,10 @@ async function findByHash(contentHash: string, excludeId: string) {
   return row?.id;
 }
 
-export async function claimContentHash(videoId: string, contentHash: string): Promise<string | undefined> {
+export async function claimContentHash(
+  videoId: string,
+  contentHash: string,
+): Promise<string | undefined> {
   const existing = await findByHash(contentHash, videoId);
   if (existing) return existing;
   try {

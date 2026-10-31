@@ -1,5 +1,5 @@
-import type { ErrorRequestHandler } from "express";
-import { ZodError } from "zod";
+import type { ErrorRequestHandler } from 'express';
+import { ZodError } from 'zod';
 
 export class HttpError extends Error {
   constructor(
@@ -12,7 +12,7 @@ export class HttpError extends Error {
 
 export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof ZodError) {
-    res.status(400).json({ error: "invalid request", issues: err.issues });
+    res.status(400).json({ error: 'invalid request', issues: err.issues });
     return;
   }
   if (err instanceof HttpError) {
@@ -20,5 +20,5 @@ export const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
     return;
   }
   console.error(err);
-  res.status(500).json({ error: "internal error" });
+  res.status(500).json({ error: 'internal error' });
 };
