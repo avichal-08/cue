@@ -4,8 +4,9 @@ import { fetchSource } from './source';
 
 export type Handler = (job: Job<StageJob>) => Promise<void>;
 
-const stub: Handler = async (job) => {
+const stub: Handler = (job) => {
   console.log(`[${job.data.stage}] ${job.data.videoId} (stub)`);
+  return Promise.resolve();
 };
 
 export const handlers: Record<Stage, Handler> = {

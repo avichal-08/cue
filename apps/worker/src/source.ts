@@ -4,7 +4,6 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { extname, join } from 'node:path';
 import { Readable } from 'node:stream';
-import type { ReadableStream } from 'node:stream/web';
 import { UnrecoverableError } from 'bullmq';
 import { deleteObject, env, hashObject, uploadStream } from '@cue/core';
 import { claimContentHash, db, videos } from '@cue/db';
@@ -41,7 +40,7 @@ async function fetchDirect(url: URL, key: (ext: string) => string) {
   const storageKey = key(videoExts.has(ext) ? ext : '.mp4');
   await uploadStream(
     storageKey,
-    Readable.fromWeb(res.body as ReadableStream),
+    Readable.fromWeb(res.body),
     res.headers.get('content-type') ?? undefined,
   );
   return { storageKey };

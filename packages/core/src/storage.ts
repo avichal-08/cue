@@ -65,7 +65,7 @@ export async function deleteObject(key: string) {
 export async function hashObject(key: string): Promise<string> {
   const res = await s3().send(new GetObjectCommand({ Bucket: bucket(), Key: key }));
   const hash = createHash('sha256');
-  for await (const chunk of res.Body as Readable) hash.update(chunk);
+  for await (const chunk of res.Body as Readable) hash.update(chunk as Buffer);
   return hash.digest('hex');
 }
 
