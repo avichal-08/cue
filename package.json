@@ -15,8 +15,8 @@
     "check": "turbo run lint typecheck test --concurrency=2",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "infra:up": "docker compose up -d --wait",
-    "infra:down": "docker compose down",
+    "infra:up": "docker compose -f infra/compose.yml up -d --wait",
+    "infra:down": "docker compose -f infra/compose.yml down",
     "db:generate": "pnpm --filter @cue/db generate",
     "db:migrate": "pnpm --filter @cue/db migrate",
     "db:studio": "pnpm --filter @cue/db studio"
