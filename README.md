@@ -57,7 +57,8 @@ Page URLs (YouTube and similar) need [yt-dlp](https://github.com/yt-dlp/yt-dlp) 
 ## Pipeline
 
 `decode → segment → transcribe → see → index`, each stage idempotent and resumable via `stage_runs`.
-See [docs/architecture.md](docs/architecture.md) and [docs/decisions](docs/decisions).
+See [docs/architecture.md](docs/architecture.md), [docs/decisions](docs/decisions) and
+[docs/RESOURCES.md](docs/RESOURCES.md).
 
 ## Status
 
