@@ -14,12 +14,15 @@
     "infra:down": "docker compose down",
     "db:generate": "pnpm --filter @cue/db generate",
     "db:migrate": "pnpm --filter @cue/db migrate",
-    "db:studio": "pnpm --filter @cue/db studio"
+    "db:studio": "pnpm --filter @cue/db studio",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "prettier": "^3.9.10",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0",
-    "turbo": "^2.11.8"
+    "turbo": "^2.11.8",
+    "typescript": "^5.7.0"
   }
 }
