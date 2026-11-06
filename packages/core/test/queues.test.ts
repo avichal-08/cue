@@ -6,6 +6,7 @@ import {
   stageInputHash,
   stageJobId,
   stages,
+  stagesAfter,
 } from '../src/queues';
 
 describe('queues', () => {
@@ -17,6 +18,11 @@ describe('queues', () => {
     expect(nextStage('decode')).toBe('segment');
     expect(nextStage('see')).toBe('index');
     expect(nextStage('index')).toBeUndefined();
+  });
+
+  it('lists every stage downstream of a stage', () => {
+    expect(stagesAfter('segment')).toEqual(['transcribe', 'see', 'index']);
+    expect(stagesAfter('index')).toEqual([]);
   });
 
   it('names queues and progress channels per stage and video', () => {

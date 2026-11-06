@@ -1,5 +1,5 @@
-import { and, eq, sql } from 'drizzle-orm';
-import { stages, type Stage } from '@cue/core';
+import { and, eq, inArray, sql } from 'drizzle-orm';
+import { stages, stagesAfter, type Stage } from '@cue/core';
 import { db } from './client';
 import { stageRuns } from './schema';
 
@@ -14,7 +14,7 @@ export async function getRun(videoId: string, stage: Stage) {
 
 export async function startRun(videoId: string, stage: Stage) {
   const now = new Date();
-  await db
+  const upsert = db
     .insert(stageRuns)
     .values({ videoId, stage, status: 'running', attempts: 1, startedAt: now })
     .onConflictDoUpdate({
@@ -28,6 +28,11 @@ export async function startRun(videoId: string, stage: Stage) {
         finishedAt: null,
       },
     });
+  const invalidate = db
+    .update(stageRuns)
+    .set({ status: 'queued', inputHash: null, progress: 0, finishedAt: null })
+    .where(and(eq(stageRuns.videoId, videoId), inArray(stageRuns.stage, stagesAfter(stage))));
+  await db.batch([upsert, invalidate]);
 }
 
 export async function finishRun(videoId: string, stage: Stage, inputHash: string) {

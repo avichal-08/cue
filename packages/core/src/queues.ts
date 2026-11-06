@@ -10,6 +10,10 @@ export function nextStage(stage: Stage): Stage | undefined {
   return stages[stages.indexOf(stage) + 1];
 }
 
+export function stagesAfter(stage: Stage): Stage[] {
+  return stages.slice(stages.indexOf(stage) + 1);
+}
+
 export interface StageJob {
   videoId: string;
   stage: Stage;
