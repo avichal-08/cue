@@ -3,6 +3,7 @@ import { deleteObject, presignGet } from '@cue/core';
 import { db, videos } from '@cue/db';
 import { eq } from 'drizzle-orm';
 import { audioKey, extractAudio } from './audio';
+import { sampleFrames } from './frames';
 import type { Handler } from './handlers';
 import { probe } from './probe';
 import { fetchSource } from './source';
@@ -22,10 +23,13 @@ export const decode: Handler = async (job, ctx) => {
 
   if (hasAudio) await extractAudio(videoId, input);
   else await deleteObject(audioKey(videoId));
-  await ctx.progress(80);
+  await ctx.progress(70);
+
+  const frameCount = await sampleFrames(videoId, input, info.durationMs);
 
   console.log(
     `[decode] ${videoId} ${info.width}x${info.height} ${info.fps}fps ${info.durationMs}ms` +
-      (hasAudio ? ' +audio' : ' no audio'),
+      (hasAudio ? ' +audio' : ' no audio') +
+      ` ${frameCount} frames`,
   );
 };
