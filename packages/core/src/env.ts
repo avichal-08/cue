@@ -15,9 +15,8 @@ const schema = z.object({
   S3_SECRET_KEY: z.string().default('cuecuecue'),
   YTDLP_PATH: z.string().default('yt-dlp'),
   API_PORT: z.coerce.number().int().default(4000),
-  OPENAI_API_KEY: z.string().optional(),
-  VOYAGE_API_KEY: z.string().optional(),
-  ANTHROPIC_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
 });
 
 export type Env = z.infer<typeof schema>;
