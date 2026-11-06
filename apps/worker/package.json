@@ -6,7 +6,8 @@
     "dev": "tsx watch src/index.ts",
     "start": "tsx src/index.ts",
     "typecheck": "tsc",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run"
   },
   "dependencies": {
     "@cue/core": "workspace:*",
@@ -22,6 +23,7 @@
     "@cue/tsconfig": "workspace:*",
     "@types/ffprobe-static": "^2.0.3",
     "@types/node": "^22.10.0",
-    "eslint": "^10.12.0"
+    "eslint": "^10.12.0",
+    "vitest": "^5.0.5"
   }
 }
