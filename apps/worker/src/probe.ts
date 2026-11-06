@@ -3,7 +3,13 @@ import ffprobe from 'ffprobe-static';
 import { run } from './exec';
 
 interface ProbeOutput {
-  streams?: { width?: number; height?: number; avg_frame_rate?: string; r_frame_rate?: string }[];
+  streams?: {
+    codec_type?: string;
+    width?: number;
+    height?: number;
+    avg_frame_rate?: string;
+    r_frame_rate?: string;
+  }[];
   format?: { duration?: string };
 }
 
@@ -12,6 +18,7 @@ export interface MediaInfo {
   width: number;
   height: number;
   fps: number;
+  hasAudio: boolean;
 }
 
 export function parseRate(rate: string | undefined) {
@@ -21,22 +28,21 @@ export function parseRate(rate: string | undefined) {
 }
 
 export function toMediaInfo({ streams, format }: ProbeOutput): MediaInfo {
-  const video = streams?.[0];
+  const video = streams?.find((s) => s.codec_type === 'video');
+  const hasAudio = !!streams?.some((s) => s.codec_type === 'audio');
   const durationMs = Math.round(Number(format?.duration) * 1000);
   const fps = parseRate(video?.avg_frame_rate) ?? parseRate(video?.r_frame_rate);
   if (!video?.width || !video.height || !fps || !(durationMs > 0))
     throw new UnrecoverableError('not a playable video');
-  return { durationMs, width: video.width, height: video.height, fps };
+  return { durationMs, width: video.width, height: video.height, fps, hasAudio };
 }
 
 export async function probe(input: string): Promise<MediaInfo> {
   const out = await run(ffprobe.path, [
     '-v',
     'error',
-    '-select_streams',
-    'v:0',
     '-show_entries',
-    'stream=width,height,avg_frame_rate,r_frame_rate:format=duration',
+    'stream=codec_type,width,height,avg_frame_rate,r_frame_rate:format=duration',
     '-of',
     'json',
     input,
