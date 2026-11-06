@@ -2,7 +2,11 @@ import type { Job } from 'bullmq';
 import type { Stage, StageJob } from '@cue/core';
 import { fetchSource } from './source';
 
-export type Handler = (job: Job<StageJob>) => Promise<void>;
+export interface StageContext {
+  progress(percent: number): Promise<void>;
+}
+
+export type Handler = (job: Job<StageJob>, ctx: StageContext) => Promise<void>;
 
 const stub: Handler = (job) => {
   console.log(`[${job.data.stage}] ${job.data.videoId} (stub)`);
@@ -10,9 +14,9 @@ const stub: Handler = (job) => {
 };
 
 export const handlers: Record<Stage, Handler> = {
-  decode: async (job) => {
+  decode: async (job, ctx) => {
     await fetchSource(job.data.videoId);
-    await stub(job);
+    await stub(job, ctx);
   },
   segment: stub,
   transcribe: stub,

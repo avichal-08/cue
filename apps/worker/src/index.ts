@@ -1,24 +1,20 @@
 import { Queue, Worker } from 'bullmq';
-import { defaultJobOptions, env, nextStage, queueName, stages, type StageJob } from '@cue/core';
+import { defaultJobOptions, env, queueName, stages, type Stage, type StageJob } from '@cue/core';
 import { handlers } from './handlers';
+import { redis } from './progress';
+import { runStage } from './runner';
 
 const connection = { url: env().REDIS_URL };
 
 const queues = Object.fromEntries(
   stages.map((s) => [s, new Queue<StageJob>(queueName(s), { connection, defaultJobOptions })]),
-);
+) as Record<Stage, Queue<StageJob>>;
 
 const workers = stages.map(
   (stage) =>
-    new Worker<StageJob>(
-      queueName(stage),
-      async (job) => {
-        await handlers[stage](job);
-        const next = nextStage(stage);
-        if (next) await queues[next]!.add(next, { videoId: job.data.videoId, stage: next });
-      },
-      { connection },
-    ),
+    new Worker<StageJob>(queueName(stage), (job) => runStage(job, handlers[stage], queues), {
+      connection,
+    }),
 );
 
 for (const w of workers) {
@@ -32,6 +28,7 @@ async function shutdown() {
     ...workers.map((w) => w.close()),
     ...Object.values(queues).map((q) => q.close()),
   ]);
+  redis.disconnect();
   process.exit(0);
 }
 
