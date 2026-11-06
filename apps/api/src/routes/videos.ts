@@ -3,10 +3,16 @@ import { extname } from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
 import { deleteObject, hashObject, objectExists, presignGet, presignPut } from '@cue/core';
-import { claimContentHash, db, stageRuns, videos as videosTable } from '@cue/db';
+import {
+  claimContentHash,
+  db,
+  firstUnfinishedStage,
+  stageRuns,
+  videos as videosTable,
+} from '@cue/db';
 import { asc, desc, eq } from 'drizzle-orm';
 import { HttpError } from '../errors';
-import { enqueueIngest } from '../queue';
+import { enqueueFrom, enqueueIngest } from '../queue';
 
 export const videos = Router();
 
@@ -67,6 +73,20 @@ videos.post('/:id/complete', async (req, res) => {
 
   await enqueueIngest(video.id);
   res.json({ videoId: video.id, duplicate: false });
+});
+
+videos.post('/:id/retry', async (req, res) => {
+  const video = await getVideo(req.params.id);
+  if (video.status !== 'failed') throw new HttpError(409, 'only failed videos can be retried');
+  if (video.error?.startsWith('duplicate of')) throw new HttpError(409, video.error);
+
+  const from = (await firstUnfinishedStage(video.id)) ?? 'index';
+  await db
+    .update(videosTable)
+    .set({ status: 'pending', error: null })
+    .where(eq(videosTable.id, video.id));
+  await enqueueFrom(video.id, from);
+  res.status(202).json({ videoId: video.id, from });
 });
 
 const urlBody = z.object({
