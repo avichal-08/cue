@@ -1,0 +1,1 @@
+ALTER TABLE "segments" ALTER COLUMN "visual_embedding" SET DATA TYPE vector(1536);

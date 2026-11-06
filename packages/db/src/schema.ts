@@ -91,7 +91,7 @@ export const segments = pgTable(
       sql`to_tsvector('english', coalesce(transcript_text, '') || ' ' || coalesce(ocr_text, ''))`,
     ),
     textEmbedding: vector('text_embedding', { dimensions: 1536 }),
-    visualEmbedding: vector('visual_embedding', { dimensions: 1024 }),
+    visualEmbedding: vector('visual_embedding', { dimensions: 1536 }),
     ocrEmbedding: vector('ocr_embedding', { dimensions: 1536 }),
     ...timestamps,
   },
