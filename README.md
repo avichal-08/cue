@@ -11,7 +11,7 @@ Cue indexes what is said (transcript), shown (frames) and written on screen (OCR
 - **worker**: BullMQ on Redis, one queue per pipeline stage
 - **db**: Drizzle + Neon Postgres with pgvector
 - **storage**: S3-compatible (MinIO locally, R2 in prod)
-- **models**: hosted APIs behind a provider interface
+- **models**: free tiers of Groq (speech) and Gemini (embeddings, OCR, rerank), behind provider interfaces
 
 ## Layout
 

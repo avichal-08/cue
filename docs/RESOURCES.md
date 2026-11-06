@@ -36,15 +36,16 @@ how much it teaches per minute spent.
 
 ### Transcribe
 
-- ★ [OpenAI speech to text](https://platform.openai.com/docs/guides/speech-to-text): word timestamps, file size limits and prompting.
+- ★ [Groq speech to text](https://console.groq.com/docs/speech-to-text): word timestamps via `verbose_json`, the 25 MB file limit and prompting.
+- [Groq rate limits](https://console.groq.com/docs/rate-limits): the audio-seconds per hour and per day caps the transcribe stage has to respect.
 - [Whisper paper](https://arxiv.org/abs/2212.04356): sections 2 and 3 only. Explains the 30 s windows and why long audio needs chunking.
 - [WhisperX](https://github.com/m-bain/whisperX): how forced alignment gets accurate word timings. The reference if hosted timestamps drift.
 
 ### See: frames and OCR
 
-- ★ [CLIP paper](https://arxiv.org/abs/2103.00020): sections 1–2. Why text queries can find images at all: one shared embedding space.
-- [Voyage multimodal embeddings](https://docs.voyageai.com/docs/multimodal-embeddings): the frame embedder cue uses, and how text and images go in the same call.
-- [Claude vision](https://docs.claude.com/en/docs/build-with-claude/vision): image limits and prompting for OCR of slides and code.
+- [CLIP paper](https://arxiv.org/abs/2103.00020): sections 1–2. Why text queries can find images at all: one shared embedding space.
+- ★ [Gemini embeddings](https://ai.google.dev/gemini-api/docs/embeddings): `gemini-embedding-2`, text and images in one space, and choosing `output_dimensionality`.
+- [Gemini image understanding](https://ai.google.dev/gemini-api/docs/image-understanding): image limits and prompting for OCR of slides and code.
 - [Gemini video understanding](https://ai.google.dev/gemini-api/docs/video-understanding): the alternative of sending video straight to a model. A good yardstick for the cost and quality cue is competing with.
 
 ---
