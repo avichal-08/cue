@@ -31,7 +31,7 @@ url ─────► video row ───────────────�
   then applies the same hash dedupe.
 - **Stages.** Each stage is its own queue. A job is keyed by video and stage, so enqueueing
   twice does not run twice. `stage_runs` records status and input hashes so a failed stage
-  reruns alone (see [0003](decisions/0003-one-queue-per-stage.md)).
+  reruns alone (see [0001](decisions/0001-one-queue-per-stage.md)).
 
 ## Data
 

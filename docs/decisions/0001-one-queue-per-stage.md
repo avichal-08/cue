@@ -1,4 +1,4 @@
-# 0003. One queue per pipeline stage
+# 0001. One queue per pipeline stage
 
 - Status: Accepted
 - Date: 2026-10-21

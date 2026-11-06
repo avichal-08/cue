@@ -1,16 +1,17 @@
 # Architecture decisions
 
 Each file records one significant design decision: the problem, what was chosen, the
-alternatives that were considered, and what the choice costs.
+alternatives that were considered, and what the choice costs. Only decisions that shape the
+system and would be expensive to reverse get a record; routine choices live in the code and the
+commit history.
 
 A decision is never edited to say something else. If it is revisited, a new record supersedes
 it and the old one gets a `Superseded by` line.
 
-| #                                               | Decision                                   | Status   |
-| ----------------------------------------------- | ------------------------------------------ | -------- |
-| [0001](0001-hosted-models-behind-providers.md)  | Hosted models behind provider interfaces   | Accepted |
-| [0002](0002-neon-with-local-redis-and-minio.md) | Neon for Postgres, Redis and MinIO locally | Accepted |
-| [0003](0003-one-queue-per-stage.md)             | One queue per pipeline stage               | Accepted |
+| #                                   | Decision                                                   | Status   |
+| ----------------------------------- | ---------------------------------------------------------- | -------- |
+| [0001](0001-one-queue-per-stage.md) | One queue per pipeline stage                               | Accepted |
+| [0002](0002-free-tier-models.md)    | Free-tier model APIs: Groq for speech, Gemini for the rest | Accepted |
 
 ## Template
 
