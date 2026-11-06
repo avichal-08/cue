@@ -1,6 +1,6 @@
 import type { Job } from 'bullmq';
 import type { Stage, StageJob } from '@cue/core';
-import { fetchSource } from './source';
+import { decode } from './decode';
 
 export interface StageContext {
   progress(percent: number): Promise<void>;
@@ -14,10 +14,7 @@ const stub: Handler = (job) => {
 };
 
 export const handlers: Record<Stage, Handler> = {
-  decode: async (job, ctx) => {
-    await fetchSource(job.data.videoId);
-    await stub(job, ctx);
-  },
+  decode,
   segment: stub,
   transcribe: stub,
   see: stub,

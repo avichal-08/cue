@@ -1,4 +1,3 @@
-import { spawn } from 'node:child_process';
 import { createReadStream } from 'node:fs';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -8,29 +7,12 @@ import { UnrecoverableError } from 'bullmq';
 import { deleteObject, env, hashObject, uploadStream } from '@cue/core';
 import { claimContentHash, db, videos } from '@cue/db';
 import { eq } from 'drizzle-orm';
+import { run } from './exec';
 
 const videoExts = new Set(['.mp4', '.mov', '.mkv', '.webm', '.m4v', '.avi']);
 
 function isDirectMedia(url: URL, contentType: string | null) {
   return contentType?.startsWith('video/') || videoExts.has(extname(url.pathname).toLowerCase());
-}
-
-function run(cmd: string, args: string[]): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const child = spawn(cmd, args);
-    let out = '';
-    let err = '';
-    child.stdout.on('data', (d) => (out += d));
-    child.stderr.on('data', (d) => (err += d));
-    child.on('error', (e) =>
-      reject(
-        (e as NodeJS.ErrnoException).code === 'ENOENT' ? new Error(`${cmd} not installed`) : e,
-      ),
-    );
-    child.on('close', (code) =>
-      code === 0 ? resolve(out) : reject(new Error(err.trim() || `${cmd} exited ${code}`)),
-    );
-  });
 }
 
 async function fetchDirect(url: URL, key: (ext: string) => string) {
