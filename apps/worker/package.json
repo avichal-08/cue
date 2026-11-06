@@ -12,7 +12,8 @@
     "@cue/core": "workspace:*",
     "@cue/db": "workspace:*",
     "bullmq": "^6.3.19",
-    "drizzle-orm": "^0.44.7"
+    "drizzle-orm": "^0.44.7",
+    "ioredis": "^6.0.0"
   },
   "devDependencies": {
     "@cue/eslint-config": "workspace:*",
