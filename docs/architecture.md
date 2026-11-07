@@ -41,7 +41,19 @@ url ─────► video row ───────────────�
 - `transcript_words`: word timings, used to cut clips on word boundaries.
 - `frames`, `embedding_cache`, `stage_runs`.
 
-## Search (planned)
+## Search
 
-Vector search per modality plus keyword search, fused by reciprocal rank, reranked by an LLM,
-then adjacent hits are merged into clips snapped to word boundaries.
+```
+query ──► filters + one cached query vector ──► 3 vector searches + keyword search
+      ──► similarity floors + weighted RRF ──► Gemini Flash rerank ──► clips
+```
+
+- **Retrieval.** One query vector searches transcript, OCR and keyframe vectors, alongside
+  Postgres full-text search, in a single round trip. Weak vector hits are dropped before
+  reciprocal rank fusion (see [0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md)).
+- **Rerank.** Gemini Flash scores the top fused hits with a short reason, optionally looking at
+  keyframes, and falls back to the fused order on failure (see
+  [components/rerank](components/rerank.md)).
+- **Clips (planned).** Adjacent hits are merged into clips snapped to word boundaries.
+
+How individual components work is documented in [components](components/README.md).
