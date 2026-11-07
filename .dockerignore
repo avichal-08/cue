@@ -1,0 +1,12 @@
+**/node_modules
+**/.next
+**/.turbo
+**/*.tsbuildinfo
+.git
+.github
+.claude
+.env
+.env.*
+docs
+*.pdf
+ROADMAP.md
