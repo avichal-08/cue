@@ -1,11 +1,12 @@
 import { UnrecoverableError } from 'bullmq';
-import { objectExists, presignGet, type Transcript } from '@cue/core';
+import { hashObject, objectExists, presignGet, type Transcript } from '@cue/core';
 import { db, segments, transcriptWords, videos } from '@cue/db';
 import { asc, eq } from 'drizzle-orm';
 import { audioKey, cutAudio } from './audio';
 import { planChunks, stitch, type ChunkResult } from './chunks';
 import type { Handler, StageContext } from './handlers';
 import { asJobError, stt } from './models';
+import { readTranscript, transcriptCacheKey, writeTranscript } from './transcript-cache';
 import { placeWords, segmentTexts } from './words';
 
 const maxUploadBytes = 25 * 1024 * 1024;
@@ -15,8 +16,12 @@ async function transcribeAudio(
   key: string,
   durationMs: number,
   ctx: StageContext,
-): Promise<Transcript> {
+): Promise<{ transcript: Transcript; cached: boolean }> {
   const model = stt();
+  const cacheKey = transcriptCacheKey(await hashObject(key), model.id);
+  const hit = await readTranscript(cacheKey);
+  if (hit) return { transcript: hit, cached: true };
+
   const input = await presignGet(key);
   const chunks = planChunks(durationMs);
   const parts: ChunkResult[] = [];
@@ -30,7 +35,9 @@ async function transcribeAudio(
     parts.push({ chunk, transcript });
     await ctx.progress(Math.round(((i + 1) / chunks.length) * 80));
   }
-  return stitch(parts);
+  const transcript = stitch(parts);
+  await writeTranscript(cacheKey, transcript);
+  return { transcript, cached: false };
 }
 
 export const transcribe: Handler = async (job, ctx) => {
@@ -39,9 +46,10 @@ export const transcribe: Handler = async (job, ctx) => {
   if (!video?.durationMs) throw new UnrecoverableError('decode has not run');
 
   const key = audioKey(videoId);
-  const transcript = (await objectExists(key))
+  const result = (await objectExists(key))
     ? await transcribeAudio(key, video.durationMs, ctx)
     : undefined;
+  const transcript = result?.transcript;
 
   const segs = await db
     .select({ id: segments.id, startMs: segments.startMs, endMs: segments.endMs })
@@ -75,7 +83,8 @@ export const transcribe: Handler = async (job, ctx) => {
   console.log(
     `[transcribe] ${videoId} ` +
       (transcript
-        ? `${placed.length} words (${transcript.language ?? '?'}) in ${spoken}/${segs.length} segments`
+        ? `${placed.length} words (${transcript.language ?? '?'}) in ${spoken}/${segs.length} segments` +
+          (result?.cached ? ' (cached)' : '')
         : 'no audio, transcript cleared'),
   );
 };
