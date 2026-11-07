@@ -2,7 +2,8 @@
 
 Multimodal video search. Upload hours of video, ask in plain language, get back timestamped clips, ranked and explained.
 
-Cue indexes what is said (transcript), shown (frames) and written on screen (OCR), then answers queries with hybrid vector + keyword retrieval and a reranker.
+Cue indexes what is said (transcript), shown (frames) and written on screen (OCR), then answers queries with hybrid vector + keyword retrieval, a reranker and short answers that
+cite the exact moments.
 
 ## Stack
 
@@ -11,7 +12,8 @@ Cue indexes what is said (transcript), shown (frames) and written on screen (OCR
 - **worker**: BullMQ on Redis, one queue per pipeline stage
 - **db**: Drizzle + Neon Postgres with pgvector
 - **storage**: S3-compatible (MinIO locally, R2 in prod)
-- **models**: free tiers of Groq (speech) and Gemini (embeddings, OCR, rerank), behind provider interfaces
+- **models**: free tiers of Groq (speech) and Gemini (embeddings, OCR, rerank, answers), behind
+  provider interfaces
 
 ## Layout
 
@@ -24,7 +26,7 @@ packages/core            env, queues, providers, storage
 packages/tsconfig        shared tsconfig
 packages/eslint-config   shared eslint config
 infra/compose.yml        local redis and minio
-docs/                    architecture and decision records
+docs/                    architecture, api, components and decision records
 ```
 
 ## Quickstart
@@ -54,13 +56,27 @@ Page URLs (YouTube and similar) need [yt-dlp](https://github.com/yt-dlp/yt-dlp) 
 | `pnpm db:generate` | generate a migration from the schema |
 | `pnpm db:migrate`  | apply migrations to `DATABASE_URL`   |
 
-## Pipeline
+## How it works
 
 `decode → segment → transcribe → see → index`, each stage idempotent and resumable via `stage_runs`.
-See [docs/architecture.md](docs/architecture.md), [docs/decisions](docs/decisions) and
-[docs/RESOURCES.md](docs/RESOURCES.md).
+Search runs filters, hybrid retrieval, rerank and clip assembly on every query.
+
+| Doc                                          | What it covers                      |
+| -------------------------------------------- | ----------------------------------- |
+| [docs/architecture.md](docs/architecture.md) | how the parts fit together          |
+| [docs/api.md](docs/api.md)                   | every HTTP endpoint                 |
+| [docs/components](docs/components/README.md) | how search, rerank and answers work |
+| [docs/decisions](docs/decisions/README.md)   | why the big choices were made       |
+| [docs/RESOURCES.md](docs/RESOURCES.md)       | reading list for the build          |
 
 ## Status
 
-Uploads, URL ingest, content-hash dedupe and video endpoints work. The pipeline stages are
-stubs; transcription, frames, OCR and search come next, then evals and a shorts generator.
+Ingest and search work end to end:
+
+- **Ingest**: upload or link, content-hash dedupe, scene detection, transcription with word
+  timings, keyframe embeddings and OCR, text embeddings with a cache, live progress in the UI.
+- **Search**: hybrid retrieval, rerank with reasons, clips snapped to word boundaries, grounded
+  answers with clickable citations.
+
+Next: evals (retrieval recall, timestamp accuracy, ablations, cost and latency), then hardening
+and a shorts generator. Ranking thresholds are still first guesses until the evals tune them.

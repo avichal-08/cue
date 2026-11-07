@@ -45,15 +45,19 @@ url ─────► video row ───────────────�
 
 ```
 query ──► filters + one cached query vector ──► 3 vector searches + keyword search
-      ──► similarity floors + weighted RRF ──► Gemini Flash rerank ──► clips
+      ──► similarity floors + weighted RRF ──► Gemini Flash rerank
+      ──► clips merged and snapped to words ──► optional grounded answer
 ```
 
 - **Retrieval.** One query vector searches transcript, OCR and keyframe vectors, alongside
   Postgres full-text search, in a single round trip. Weak vector hits are dropped before
   reciprocal rank fusion (see [0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md)).
 - **Rerank.** Gemini Flash scores the top fused hits with a short reason, optionally looking at
-  keyframes, and falls back to the fused order on failure (see
-  [components/rerank](components/rerank.md)).
-- **Clips (planned).** Adjacent hits are merged into clips snapped to word boundaries.
+  keyframes, and falls back to the fused order on failure.
+- **Clips.** Adjacent hits from one video merge into a clip whose edges are moved to word
+  boundaries and padded into silence.
+- **Answers.** A separate request writes a short answer from the top clips, citing each claim
+  as `[n]`; citations play their clip.
 
-How individual components work is documented in [components](components/README.md).
+Details: [components/search](components/search.md), [components/rerank](components/rerank.md),
+[components/answers](components/answers.md). Endpoints: [api.md](api.md).
