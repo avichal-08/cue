@@ -6,6 +6,9 @@ returns timestamped clips.
 
 ## Components
 
+Diagram: [diagrams/architecture.excalidraw](diagrams/architecture.excalidraw), open it at
+[excalidraw.com](https://excalidraw.com).
+
 | Part            | Role                                                     |
 | --------------- | -------------------------------------------------------- |
 | `apps/web`      | Next.js UI: upload, ingest progress, search, clip player |
