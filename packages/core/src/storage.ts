@@ -12,16 +12,27 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from './env';
 
 let client: S3Client | undefined;
+let signer: S3Client | undefined;
 
-export function s3(): S3Client {
+function makeClient(endpoint: string) {
   const e = env();
-  client ??= new S3Client({
-    endpoint: e.S3_ENDPOINT,
+  return new S3Client({
+    endpoint,
     region: e.S3_REGION,
     forcePathStyle: true,
     credentials: { accessKeyId: e.S3_ACCESS_KEY, secretAccessKey: e.S3_SECRET_KEY },
   });
+}
+
+export function s3(): S3Client {
+  client ??= makeClient(env().S3_ENDPOINT);
   return client;
+}
+
+function presigner(): S3Client {
+  const e = env();
+  signer ??= e.S3_PUBLIC_ENDPOINT ? makeClient(e.S3_PUBLIC_ENDPOINT) : s3();
+  return signer;
 }
 
 const bucket = () => env().S3_BUCKET;
@@ -70,12 +81,14 @@ export async function hashObject(key: string): Promise<string> {
 }
 
 export function presignGet(key: string, expiresIn = 3600) {
-  return getSignedUrl(s3(), new GetObjectCommand({ Bucket: bucket(), Key: key }), { expiresIn });
+  return getSignedUrl(presigner(), new GetObjectCommand({ Bucket: bucket(), Key: key }), {
+    expiresIn,
+  });
 }
 
 export function presignPut(key: string, contentType: string, expiresIn = 3600) {
   return getSignedUrl(
-    s3(),
+    presigner(),
     new PutObjectCommand({ Bucket: bucket(), Key: key, ContentType: contentType }),
     {
       expiresIn,
