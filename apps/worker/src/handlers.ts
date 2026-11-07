@@ -1,6 +1,7 @@
 import type { Job } from 'bullmq';
 import type { Stage, StageJob } from '@cue/core';
 import { decode } from './decode';
+import { see } from './see';
 import { segment } from './segment';
 import { transcribe } from './transcribe';
 
@@ -19,6 +20,6 @@ export const handlers: Record<Stage, Handler> = {
   decode,
   segment,
   transcribe,
-  see: stub,
+  see,
   index: stub,
 };
