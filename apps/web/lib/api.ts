@@ -42,3 +42,25 @@ export function formatMs(ms: number | null | undefined) {
   const s = String(total % 60).padStart(2, '0');
   return h ? `${h}:${String(m).padStart(2, '0')}:${s}` : `${m}:${s}`;
 }
+
+export function timecode(ms: number) {
+  const tenths = Math.floor((ms % 1000) / 100);
+  const total = Math.floor(ms / 1000);
+  const h = Math.floor(total / 3600);
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+  const s = String(total % 60).padStart(2, '0');
+  return h ? `${h}:${m}:${s}` : `${m}:${s}.${tenths}`;
+}
+
+export function ago(iso: string) {
+  const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
+  if (seconds < 60) return 'just now';
+  const units: [number, string][] = [
+    [86_400, 'd'],
+    [3_600, 'h'],
+    [60, 'm'],
+  ];
+  for (const [size, unit] of units)
+    if (seconds >= size) return `${Math.floor(seconds / size)}${unit} ago`;
+  return 'just now';
+}

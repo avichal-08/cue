@@ -1,0 +1,119 @@
+.panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.muted {
+  box-shadow: none;
+  background: transparent;
+}
+
+.muted .text {
+  color: var(--ink-2);
+}
+
+.text {
+  font-size: 16px;
+  line-height: 1.7;
+  letter-spacing: -0.005em;
+}
+
+.cite {
+  display: inline-grid;
+  place-items: center;
+  min-width: 19px;
+  height: 19px;
+  margin: 0 2px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--ink);
+  color: #fbfaf7;
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  vertical-align: 2px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+button.cite:hover {
+  background: var(--cue);
+}
+
+.sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 0;
+  padding: 14px 0 0;
+  list-style: none;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.sources button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.sources button:hover {
+  border-color: var(--line-strong);
+}
+
+.sources .cite {
+  margin: 0;
+  vertical-align: 0;
+}
+
+.sources .mono {
+  font-size: 12px;
+}
+
+.sourceTitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lines {
+  display: grid;
+  gap: 9px;
+  padding: 4px 0;
+}
+
+.lines span {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--sunken), var(--paper), var(--sunken));
+  background-size: 200% 100%;
+  animation: shimmer 1.3s ease-in-out infinite;
+}
+
+.lines span:nth-child(2) {
+  width: 88%;
+}
+
+.lines span:nth-child(3) {
+  width: 54%;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}

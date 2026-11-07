@@ -1,0 +1,151 @@
+.list {
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.list li + li {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto 64px 14px;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 14px;
+  border-radius: 10px;
+  transition: background 0.15s ease;
+}
+
+.row:hover {
+  background: var(--paper);
+}
+
+.row:hover .chevron {
+  color: var(--ink);
+  transform: translateX(2px);
+}
+
+.state {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-3);
+}
+
+.ready {
+  background: var(--ok);
+}
+
+.processing,
+.pending {
+  background: var(--cue);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.failed {
+  background: var(--danger);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 550;
+}
+
+.meta {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.rowError {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--danger);
+  font-size: 12.5px;
+}
+
+.readyLabel {
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.duration {
+  color: var(--ink-2);
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.chevron {
+  color: var(--ink-3);
+  transition:
+    transform 0.15s ease,
+    color 0.15s ease;
+}
+
+.empty {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 64px 24px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 18px;
+  text-align: center;
+}
+
+.empty :global(.btn) {
+  margin-top: 12px;
+}
+
+.emptyTitle {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.skeleton {
+  height: 220px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, var(--sunken), var(--surface), var(--sunken));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.error {
+  color: var(--danger);
+}
+
+@media (max-width: 700px) {
+  .row {
+    grid-template-columns: 10px minmax(0, 1fr) 54px;
+  }
+
+  .row > :nth-child(3),
+  .chevron {
+    display: none;
+  }
+}

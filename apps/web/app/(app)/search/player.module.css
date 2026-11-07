@@ -1,0 +1,58 @@
+.player {
+  margin: 0 0 8px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.player video {
+  display: block;
+  width: 100%;
+  max-height: 58vh;
+  border-radius: 11px;
+  background: #0d0c0b;
+}
+
+.clipBar {
+  height: 3px;
+  margin: 10px 4px 0;
+  border-radius: 2px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.clipBar span {
+  display: block;
+  height: 100%;
+  background: var(--cue);
+  transition: width 0.25s linear;
+}
+
+.caption {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px 2px;
+  font-size: 14px;
+}
+
+.caption strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.caption .mono {
+  flex-shrink: 0;
+  font-size: 12px;
+}
+
+.caption :global(.btn) {
+  height: 32px;
+  margin-left: auto;
+  padding: 0 0.8rem;
+  font-size: 13px;
+}

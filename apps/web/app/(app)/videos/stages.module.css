@@ -1,0 +1,86 @@
+.full,
+.compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 4px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.full .track {
+  gap: 8px;
+}
+
+.step {
+  display: grid;
+  gap: 8px;
+}
+
+.bar {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  overflow: hidden;
+}
+
+.full .bar {
+  height: 5px;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ink);
+  transition: width 0.4s ease;
+}
+
+.running .bar span {
+  background: var(--cue);
+}
+
+.queued .bar span {
+  width: 0 !important;
+}
+
+.failed .bar {
+  background: color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+.failed .bar span {
+  background: var(--danger);
+}
+
+.name {
+  color: var(--ink-3);
+  font-family: var(--font-mono), monospace;
+  font-size: 11.5px;
+}
+
+.done .name,
+.running .name {
+  color: var(--ink);
+}
+
+.failed .name {
+  color: var(--danger);
+}
+
+.compact .track {
+  max-width: 180px;
+}
+
+.now {
+  min-width: 108px;
+  color: var(--ink-2);
+  font-size: 12px;
+}

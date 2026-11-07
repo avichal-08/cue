@@ -1,0 +1,195 @@
+.drop {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 52px 24px;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: center;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.dragging {
+  border-color: var(--cue);
+  background: color-mix(in srgb, var(--cue-soft) 45%, var(--surface));
+}
+
+.hasFile {
+  padding: 22px 24px;
+  border-style: solid;
+  border-color: var(--line);
+  justify-items: stretch;
+  box-shadow: var(--shadow);
+}
+
+.dropIcon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border-radius: 12px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+}
+
+.dropIcon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dropTitle {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.drop :global(.btn) {
+  margin-top: 12px;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.file :global(.btn) {
+  margin: 0 0 0 auto;
+}
+
+.fileIcon {
+  position: relative;
+  width: 44px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  background: linear-gradient(180deg, #2b2a27, #121110);
+}
+
+.fileIcon::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cue);
+}
+
+.fileText {
+  display: grid;
+  min-width: 0;
+}
+
+.fileText strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.fileText .mono {
+  font-size: 12.5px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.label {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.progress {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.progressHead {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13.5px;
+}
+
+.progressHead .mono {
+  color: var(--ink-2);
+  font-size: 12.5px;
+}
+
+.bar {
+  height: 4px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--sunken);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--ink);
+  transition: width 0.25s ease;
+}
+
+.error {
+  margin-top: 14px;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 40px 0 16px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.link {
+  display: flex;
+  gap: 12px;
+}
+
+.note {
+  margin-top: 12px;
+  color: var(--ink-3);
+  font-size: 13px;
+}
+
+@media (max-width: 600px) {
+  .row,
+  .link {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

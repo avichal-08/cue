@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { timecode } from '../../../lib/api';
 import styles from './player.module.css';
 
 export interface PlayerClip {
@@ -11,14 +12,10 @@ export interface PlayerClip {
   endMs: number;
 }
 
-const clock = (ms: number) => {
-  const s = Math.floor(ms / 1000);
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-};
-
 export function ClipPlayer({ clip }: { clip: PlayerClip }) {
   const video = useRef<HTMLVideoElement>(null);
   const stopAt = useRef<number | null>(clip.endMs / 1000);
+  const [nowMs, setNowMs] = useState(clip.startMs);
 
   function playClip() {
     const el = video.current;
@@ -39,6 +36,7 @@ export function ClipPlayer({ clip }: { clip: PlayerClip }) {
 
   function onTimeUpdate() {
     const el = video.current;
+    if (el) setNowMs(el.currentTime * 1000);
     if (el && stopAt.current !== null && el.currentTime >= stopAt.current) {
       el.pause();
       stopAt.current = null;
@@ -52,6 +50,9 @@ export function ClipPlayer({ clip }: { clip: PlayerClip }) {
     }
   }
 
+  const span = Math.max(1, clip.endMs - clip.startMs);
+  const fraction = Math.min(1, Math.max(0, (nowMs - clip.startMs) / span));
+
   return (
     <figure className={styles.player}>
       <video
@@ -62,12 +63,16 @@ export function ClipPlayer({ clip }: { clip: PlayerClip }) {
         onTimeUpdate={onTimeUpdate}
         onSeeked={onSeeked}
       />
+      <div className={styles.clipBar} aria-hidden>
+        <span style={{ width: `${fraction * 100}%` }} />
+      </div>
       <figcaption className={styles.caption}>
-        <span>
-          <strong>{clip.title}</strong> · {clock(clip.startMs)}–{clock(clip.endMs)}
+        <strong>{clip.title}</strong>
+        <span className="mono quiet">
+          {timecode(clip.startMs)} → {timecode(clip.endMs)}
         </span>
-        <button type="button" onClick={playClip}>
-          replay clip
+        <button type="button" className="btn btn-quiet" onClick={playClip}>
+          Replay clip
         </button>
       </figcaption>
     </figure>

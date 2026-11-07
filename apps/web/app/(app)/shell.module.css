@@ -1,0 +1,182 @@
+.shell {
+  display: grid;
+  grid-template-columns: 236px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  height: 100vh;
+  padding: 22px 14px;
+  border-right: 1px solid var(--line);
+  background: var(--sunken);
+}
+
+.brand {
+  padding: 0 8px;
+}
+
+.group {
+  display: grid;
+  gap: 2px;
+}
+
+.groupLabel {
+  padding: 0 10px 6px;
+  color: var(--ink-3);
+  font-family: var(--font-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.link svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.link:hover {
+  color: var(--ink);
+  background: rgb(255 255 255 / 55%);
+}
+
+.active {
+  color: var(--ink);
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: var(--shadow-sm);
+}
+
+.active svg {
+  stroke: var(--cue);
+}
+
+.counts {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.counts div {
+  display: flex;
+  justify-content: space-between;
+  color: var(--ink-2);
+}
+
+.counts dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.counts dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.bad {
+  color: var(--danger) !important;
+}
+
+.pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cue);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+.source {
+  margin-top: auto;
+  padding: 0 10px;
+  color: var(--ink-3);
+  font-size: 12.5px;
+}
+
+.source:hover {
+  color: var(--ink);
+}
+
+.main {
+  min-width: 0;
+}
+
+.content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 44px clamp(20px, 4vw, 48px) 80px;
+}
+
+@media (max-width: 860px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: sticky;
+    z-index: 10;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    height: auto;
+    padding: 10px 14px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .group {
+    display: flex;
+    gap: 2px;
+  }
+
+  .groupLabel,
+  .source,
+  .counts {
+    display: none;
+  }
+
+  .group + .group {
+    display: none;
+  }
+
+  .link {
+    padding: 0 9px;
+  }
+
+  .content {
+    padding-top: 28px;
+  }
+}
