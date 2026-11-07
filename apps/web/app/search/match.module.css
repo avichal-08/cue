@@ -1,0 +1,42 @@
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.badge {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.72rem;
+  cursor: default;
+}
+
+.transcript {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.ocr {
+  color: #d97706;
+  border-color: #d97706;
+}
+
+.visual {
+  color: #9333ea;
+  border-color: #9333ea;
+}
+
+.keyword {
+  color: var(--muted);
+}
+
+.mark {
+  padding: 0 0.1em;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: inherit;
+}
