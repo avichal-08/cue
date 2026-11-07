@@ -7,8 +7,10 @@ import { health } from './routes/health';
 import { jobs } from './routes/jobs';
 import { search } from './routes/search';
 import { videos } from './routes/videos';
+import { timing } from './timing';
 
 const app = express();
+app.use(timing);
 app.use(cors(env().WEB_ORIGIN));
 app.use(express.json());
 
