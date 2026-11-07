@@ -3,6 +3,9 @@ import {
   type EmbedRole,
   type ImageEmbedder,
   type Ocr,
+  type RerankCandidate,
+  type Reranker,
+  type RerankResult,
   type TextEmbedder,
 } from './providers';
 
@@ -157,6 +160,114 @@ export function geminiOcr({
       } catch (err) {
         if (err instanceof ProviderError) throw err;
         throw new ProviderError('gemini', 502, `bad ocr reply: ${(err as Error).message}`);
+      }
+    },
+  };
+}
+
+const maxCandidateChars = 800;
+
+export function rerankPrompt(query: string, count: number, withImages: boolean) {
+  return [
+    `You rank video segments for the search query: "${query}".`,
+    `There are ${count} candidates, c1 to c${count}. Each has its spoken transcript and on-screen text` +
+      (withImages ? ', followed by its keyframe image.' : '.'),
+    'For every candidate return its id, a reason of at most 12 words saying what in it does or does not answer the query, ' +
+      'and a score from 0 (unrelated) to 10 (directly answers the query). Judge only what the candidate contains.',
+  ].join('\n');
+}
+
+export function candidateText(c: RerankCandidate, label: string) {
+  const text =
+    c.text.length > maxCandidateChars ? `${c.text.slice(0, maxCandidateChars)}…` : c.text;
+  return `[${label}]\n${text || '(no text)'}`;
+}
+
+export function parseRerankReply(
+  body: unknown,
+  candidates: RerankCandidate[],
+  topK: number,
+): RerankResult[] {
+  const parts = (body as { candidates?: { content?: { parts?: { text?: string }[] } }[] })
+    .candidates?.[0]?.content?.parts;
+  const raw = parts?.map((p) => p.text ?? '').join('') ?? '';
+  const items = JSON.parse(raw || '[]') as unknown;
+  if (!Array.isArray(items)) throw new ProviderError('gemini', 502, 'rerank reply is not a list');
+
+  const results = new Map<string, RerankResult>();
+  for (const item of items as { id?: unknown; score?: unknown; reason?: unknown }[]) {
+    const index =
+      typeof item.id === 'string' ? Number(/^c(\d+)$/.exec(item.id.trim())?.[1]) - 1 : -1;
+    const candidate = candidates[index];
+    const score = Number(item.score);
+    if (!candidate || !Number.isFinite(score) || results.has(candidate.id)) continue;
+    results.set(candidate.id, {
+      id: candidate.id,
+      score: Math.min(Math.max(score, 0), 10) / 10,
+      reason: typeof item.reason === 'string' ? item.reason.trim() : undefined,
+    });
+  }
+  return [...results.values()].sort((a, b) => b.score - a.score).slice(0, topK);
+}
+
+export interface GeminiRerankerOptions {
+  apiKey: string;
+  model?: string;
+  fetch?: typeof fetch;
+}
+
+export function geminiReranker({
+  apiKey,
+  model = 'gemini-3.5-flash-lite',
+  fetch: fetchImpl = fetch,
+}: GeminiRerankerOptions): Reranker {
+  return {
+    id: `gemini/${model}`,
+    async rerank(query, candidates, topK) {
+      if (!candidates.length) return [];
+      const withImages = candidates.some((c) => c.image);
+      const parts: Part[] = [{ text: rerankPrompt(query, candidates.length, withImages) }];
+      candidates.forEach((c, i) => {
+        parts.push({ text: candidateText(c, `c${i + 1}`) });
+        if (c.image)
+          parts.push({
+            inlineData: { mimeType: imageMime(c.image), data: c.image.toString('base64') },
+          });
+      });
+
+      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          contents: [{ parts }],
+          generationConfig: {
+            temperature: 0,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'ARRAY',
+              items: {
+                type: 'OBJECT',
+                properties: {
+                  id: { type: 'STRING' },
+                  reason: { type: 'STRING' },
+                  score: { type: 'NUMBER' },
+                },
+                required: ['id', 'reason', 'score'],
+                propertyOrdering: ['id', 'reason', 'score'],
+              },
+            },
+          },
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+      }
+      try {
+        return parseRerankReply(await res.json(), candidates, topK);
+      } catch (err) {
+        if (err instanceof ProviderError) throw err;
+        throw new ProviderError('gemini', 502, `bad rerank reply: ${(err as Error).message}`);
       }
     },
   };
