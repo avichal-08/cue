@@ -3,7 +3,9 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { formatMs } from '../../lib/api';
+import { askAnswer } from '../../lib/answer';
 import { clipKey, search, type SearchClip, type SearchResponse } from '../../lib/search';
+import { AnswerPanel, type AnswerState } from './answer';
 import { ClipPlayer } from './clip-player';
 import { Highlight, MatchBadges } from './match';
 import styles from './search.module.css';
@@ -41,21 +43,45 @@ export default function Search() {
   const [keyframes, setKeyframes] = useState(false);
   const [state, setState] = useState<State>({ kind: 'idle' });
   const [selected, setSelected] = useState<SearchClip | null>(null);
+  const [answer, setAnswer] = useState<AnswerState | null>(null);
+  const searchId = useRef(0);
+  const player = useRef<HTMLDivElement>(null);
+
+  async function answerFor(id: number, q: string, clips: SearchClip[]) {
+    setAnswer({ kind: 'loading' });
+    try {
+      const response = await askAnswer(q, clips);
+      if (searchId.current === id) setAnswer({ kind: 'done', answer: response });
+    } catch (err) {
+      if (searchId.current === id)
+        setAnswer({ kind: 'error', message: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  function cite(clip: SearchClip) {
+    setSelected(clip);
+    player.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
   async function run(q: string) {
     const text = q.trim();
     if (!text) return;
+    const id = ++searchId.current;
     setState({ kind: 'loading' });
     setSelected(null);
+    setAnswer(null);
     const url = new URL(window.location.href);
     url.searchParams.set('q', text);
     window.history.replaceState(null, '', url);
     try {
       const result = await search(text, keyframes);
+      if (searchId.current !== id) return;
       setState({ kind: 'done', result });
       setSelected(result.clips[0] ?? null);
+      if (result.clips.length) void answerFor(id, result.query, result.clips);
     } catch (err) {
-      setState({ kind: 'error', message: err instanceof Error ? err.message : String(err) });
+      if (searchId.current === id)
+        setState({ kind: 'error', message: err instanceof Error ? err.message : String(err) });
     }
   }
 
@@ -118,17 +144,21 @@ export default function Search() {
             {result.meta.rerankError ? ' · rerank unavailable, showing fused order' : ''}
           </p>
 
-          {selected?.playbackUrl && (
-            <ClipPlayer
-              clip={{
-                key: clipKey(selected),
-                src: selected.playbackUrl,
-                title: selected.title,
-                startMs: selected.startMs,
-                endMs: selected.endMs,
-              }}
-            />
-          )}
+          {answer && <AnswerPanel state={answer} clips={result.clips} onCite={cite} />}
+
+          <div ref={player}>
+            {selected?.playbackUrl && (
+              <ClipPlayer
+                clip={{
+                  key: clipKey(selected),
+                  src: selected.playbackUrl,
+                  title: selected.title,
+                  startMs: selected.startMs,
+                  endMs: selected.endMs,
+                }}
+              />
+            )}
+          </div>
 
           {result.clips.length === 0 ? (
             <p className="muted">
