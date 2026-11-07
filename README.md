@@ -67,6 +67,7 @@ Search runs filters, hybrid retrieval, rerank and clip assembly on every query.
 | -------------------------------------------- | ----------------------------------- |
 | [docs/architecture.md](docs/architecture.md) | how the parts fit together          |
 | [docs/api.md](docs/api.md)                   | every HTTP endpoint                 |
+| [docs/deploy.md](docs/deploy.md)             | running it on one vm                |
 | [docs/components](docs/components/README.md) | how search, rerank and answers work |
 | [docs/decisions](docs/decisions/README.md)   | why the big choices were made       |
 | [docs/RESOURCES.md](docs/RESOURCES.md)       | reading list for the build          |
