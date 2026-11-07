@@ -13,7 +13,7 @@ cite the exact moments.
 - **api**: Express
 - **worker**: BullMQ on Redis, one queue per pipeline stage
 - **db**: Drizzle + Neon Postgres with pgvector
-- **storage**: S3-compatible (MinIO locally, R2 in prod)
+- **storage**: S3-compatible (MinIO, locally and on the deploy box)
 - **models**: free tiers of Groq (speech) and Gemini (embeddings, OCR, rerank, answers), behind
   provider interfaces
 
@@ -28,24 +28,24 @@ packages/core            env, queues, providers, storage
 packages/tsconfig        shared tsconfig
 packages/eslint-config   shared eslint config
 infra/compose.yml        local redis and minio
+infra/compose.prod.yml   full stack behind caddy for a vm
 docs/                    architecture, api, components and decision records
 ```
 
 ## Quickstart
 
-Requires Node 22+, pnpm 10 and Docker.
+Requires Node 22+, pnpm 10, Docker, a Neon database and free Groq and Gemini keys.
 
 ```bash
 pnpm install
-cp .env.example .env        # set DATABASE_URL to your neon url
+cp .env.example .env        # set DATABASE_URL, GROQ_API_KEY, GEMINI_API_KEY
 pnpm infra:up               # redis + minio
 pnpm db:migrate
 pnpm dev                    # web :3000, api :4000, worker
 ```
 
-MinIO console: http://localhost:9001 (`cue` / `cuecuecue`).
-
-Page URLs (YouTube and similar) need [yt-dlp](https://github.com/yt-dlp/yt-dlp) on the path.
+Full setup, env reference and resets are in [docs/local.md](docs/local.md). To put it on a
+server, see [docs/deploy.md](docs/deploy.md).
 
 ## Scripts
 
@@ -67,7 +67,8 @@ Search runs filters, hybrid retrieval, rerank and clip assembly on every query.
 | -------------------------------------------- | ----------------------------------- |
 | [docs/architecture.md](docs/architecture.md) | how the parts fit together          |
 | [docs/api.md](docs/api.md)                   | every HTTP endpoint                 |
-| [docs/deploy.md](docs/deploy.md)             | running it on one vm                |
+| [docs/local.md](docs/local.md)               | running it on your machine          |
+| [docs/deploy.md](docs/deploy.md)             | running it on any linux vm          |
 | [docs/components](docs/components/README.md) | how search, rerank and answers work |
 | [docs/decisions](docs/decisions/README.md)   | why the big choices were made       |
 | [docs/RESOURCES.md](docs/RESOURCES.md)       | reading list for the build          |
