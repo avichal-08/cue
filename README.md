@@ -5,6 +5,8 @@ Multimodal video search. Upload hours of video, ask in plain language, get back 
 Cue indexes what is said (transcript), shown (frames) and written on screen (OCR), then answers queries with hybrid vector + keyword retrieval, a reranker and short answers that
 cite the exact moments.
 
+![cue high level design](docs/diagrams/architecture.png)
+
 ## Stack
 
 - **web**: Next.js

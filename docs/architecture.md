@@ -6,8 +6,10 @@ returns timestamped clips.
 
 ## Components
 
-Diagram: [diagrams/architecture.excalidraw](diagrams/architecture.excalidraw), open it at
-[excalidraw.com](https://excalidraw.com).
+![cue high level design](diagrams/architecture.png)
+
+The image has the Excalidraw scene embedded: open it on [excalidraw.com](https://excalidraw.com)
+to edit it.
 
 | Part            | Role                                                     |
 | --------------- | -------------------------------------------------------- |
