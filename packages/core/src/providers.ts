@@ -19,9 +19,11 @@ export interface SpeechToText extends ModelInfo {
   transcribe(audio: Buffer, mimeType: string): Promise<Transcript>;
 }
 
+export type EmbedRole = 'query' | 'document';
+
 export interface TextEmbedder extends ModelInfo {
   dims: number;
-  embed(texts: string[]): Promise<number[][]>;
+  embed(texts: string[], role: EmbedRole): Promise<number[][]>;
 }
 
 export interface ImageEmbedder extends ModelInfo {
