@@ -1,4 +1,10 @@
-import { ProviderError, type EmbedRole, type ImageEmbedder, type TextEmbedder } from './providers';
+import {
+  ProviderError,
+  type EmbedRole,
+  type ImageEmbedder,
+  type Ocr,
+  type TextEmbedder,
+} from './providers';
 
 const base = 'https://generativelanguage.googleapis.com/v1beta';
 const maxImagesPerCall = 6;
@@ -88,5 +94,70 @@ export function geminiEmbedder({
         })),
         maxImagesPerCall,
       ),
+  };
+}
+
+export const ocrPrompt =
+  'Transcribe all legible text visible in this video frame: slides, code, captions, labels and UI. ' +
+  'Return one string per block of text in reading order, keeping line breaks and code indentation. ' +
+  'Do not describe the image. Return an empty list if there is no text.';
+
+export function parseOcrReply(body: unknown): string[] {
+  const parts = (body as { candidates?: { content?: { parts?: { text?: string }[] } }[] })
+    .candidates?.[0]?.content?.parts;
+  const raw = parts?.map((p) => p.text ?? '').join('') ?? '';
+  if (!raw.trim()) return [];
+  const blocks = JSON.parse(raw) as unknown;
+  if (!Array.isArray(blocks)) throw new ProviderError('gemini', 502, 'ocr reply is not a list');
+  return blocks
+    .filter((b): b is string => typeof b === 'string')
+    .map((b) => b.trim())
+    .filter(Boolean);
+}
+
+export interface GeminiOcrOptions {
+  apiKey: string;
+  model?: string;
+  fetch?: typeof fetch;
+}
+
+export function geminiOcr({
+  apiKey,
+  model = 'gemini-3.5-flash-lite',
+  fetch: fetchImpl = fetch,
+}: GeminiOcrOptions): Ocr {
+  return {
+    id: `gemini/${model}`,
+    async read(image) {
+      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { inlineData: { mimeType: imageMime(image), data: image.toString('base64') } },
+                { text: ocrPrompt },
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0,
+            responseMimeType: 'application/json',
+            responseSchema: { type: 'ARRAY', items: { type: 'STRING' } },
+          },
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+      }
+      try {
+        return parseOcrReply(await res.json()).map((text) => ({ text }));
+      } catch (err) {
+        if (err instanceof ProviderError) throw err;
+        throw new ProviderError('gemini', 502, `bad ocr reply: ${(err as Error).message}`);
+      }
+    },
   };
 }

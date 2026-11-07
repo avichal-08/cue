@@ -19,6 +19,7 @@ const schema = z.object({
   GROQ_STT_MODEL: z.string().default('whisper-large-v3-turbo'),
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_EMBED_MODEL: z.string().default('gemini-embedding-2'),
+  GEMINI_FLASH_MODEL: z.string().default('gemini-3.5-flash-lite'),
 });
 
 export type Env = z.infer<typeof schema>;
