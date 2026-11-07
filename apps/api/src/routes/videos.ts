@@ -7,6 +7,7 @@ import {
   claimContentHash,
   db,
   firstUnfinishedStage,
+  segments,
   stageRuns,
   videos as videosTable,
 } from '@cue/db';
@@ -179,5 +180,32 @@ videos.get('/:id', async (req, res) => {
     createdAt: video.createdAt,
     playbackUrl: video.contentHash && video.storageKey ? await presignGet(video.storageKey) : null,
     stages,
+  });
+});
+
+videos.get('/:id/segments', async (req, res) => {
+  const video = await getVideo(req.params.id);
+  const rows = await db
+    .select({
+      id: segments.id,
+      idx: segments.idx,
+      startMs: segments.startMs,
+      endMs: segments.endMs,
+      keyframeKey: segments.keyframeKey,
+      transcriptText: segments.transcriptText,
+      ocrText: segments.ocrText,
+    })
+    .from(segments)
+    .where(eq(segments.videoId, video.id))
+    .orderBy(asc(segments.idx));
+
+  res.json({
+    videoId: video.id,
+    segments: await Promise.all(
+      rows.map(async ({ keyframeKey, ...s }) => ({
+        ...s,
+        keyframeUrl: keyframeKey ? await presignGet(keyframeKey) : null,
+      })),
+    ),
   });
 });
