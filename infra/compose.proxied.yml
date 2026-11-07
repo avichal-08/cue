@@ -1,0 +1,13 @@
+services:
+  caddy:
+    ports: !reset []
+    environment:
+      CADDY_ADDRESS: ':80'
+    networks:
+      default: {}
+      edge:
+        aliases: [cue]
+
+networks:
+  edge:
+    external: true

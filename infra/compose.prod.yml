@@ -82,7 +82,7 @@ services:
       - '80:80'
       - '443:443'
     environment:
-      PUBLIC_URL: ${PUBLIC_URL}
+      CADDY_ADDRESS: ${CADDY_ADDRESS:-${PUBLIC_URL}}
       S3_BUCKET: ${S3_BUCKET}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
