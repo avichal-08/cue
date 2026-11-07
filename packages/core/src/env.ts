@@ -16,6 +16,7 @@ const schema = z.object({
   YTDLP_PATH: z.string().default('yt-dlp'),
   API_PORT: z.coerce.number().int().default(4000),
   GROQ_API_KEY: z.string().optional(),
+  GROQ_STT_MODEL: z.string().default('whisper-large-v3-turbo'),
   GEMINI_API_KEY: z.string().optional(),
 });
 

@@ -71,6 +71,21 @@ export interface Answerer extends ModelInfo {
   answer(query: string, sources: AnswerSource[]): Promise<Answer>;
 }
 
+export class ProviderError extends Error {
+  constructor(
+    readonly provider: string,
+    readonly status: number,
+    message: string,
+    readonly retryAfterMs?: number,
+  ) {
+    super(`${provider} ${status}: ${message}`);
+  }
+
+  get retryable() {
+    return this.status === 429 || this.status >= 500;
+  }
+}
+
 export interface Providers {
   stt: SpeechToText;
   textEmbedder: TextEmbedder;
