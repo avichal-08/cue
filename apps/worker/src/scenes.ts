@@ -1,5 +1,5 @@
-import ffmpeg from 'ffmpeg-static';
 import { run } from './exec';
+import { ffmpegBin } from './bin';
 
 export const hardCut = 0.3;
 export const softCut = 0.02;
@@ -49,8 +49,7 @@ export function pickCuts(scores: FrameScore[], durationMs: number): number[] {
 }
 
 export async function detectScenes(input: string, durationMs: number): Promise<number[]> {
-  if (!ffmpeg) throw new Error('ffmpeg binary missing');
-  const out = await run(ffmpeg, [
+  const out = await run(ffmpegBin(), [
     '-v',
     'error',
     '-i',

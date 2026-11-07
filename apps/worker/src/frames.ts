@@ -2,11 +2,11 @@ import { createReadStream } from 'node:fs';
 import { mkdtemp, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import ffmpeg from 'ffmpeg-static';
 import { uploadStream } from '@cue/core';
 import { db, frames } from '@cue/db';
 import { eq } from 'drizzle-orm';
 import { run } from './exec';
+import { ffmpegBin } from './bin';
 
 export const frameIntervalMs = 2_000;
 const maxSide = 1024;
@@ -25,10 +25,9 @@ async function mapLimit<T>(items: T[], limit: number, fn: (item: T) => Promise<v
 }
 
 export async function sampleFrames(videoId: string, input: string, durationMs: number) {
-  if (!ffmpeg) throw new Error('ffmpeg binary missing');
   const dir = await mkdtemp(join(tmpdir(), 'cue-frames-'));
   try {
-    await run(ffmpeg, [
+    await run(ffmpegBin(), [
       '-v',
       'error',
       '-i',

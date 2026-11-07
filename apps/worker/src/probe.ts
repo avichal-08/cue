@@ -1,6 +1,6 @@
 import { UnrecoverableError } from 'bullmq';
-import ffprobe from 'ffprobe-static';
 import { run } from './exec';
+import { ffprobeBin } from './bin';
 
 interface ProbeOutput {
   streams?: {
@@ -38,7 +38,7 @@ export function toMediaInfo({ streams, format }: ProbeOutput): MediaInfo {
 }
 
 export async function probe(input: string): Promise<MediaInfo> {
-  const out = await run(ffprobe.path, [
+  const out = await run(ffprobeBin(), [
     '-v',
     'error',
     '-show_entries',

@@ -2,19 +2,18 @@ import { createReadStream } from 'node:fs';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import ffmpeg from 'ffmpeg-static';
 import { uploadStream } from '@cue/core';
 import type { Span } from './bounds';
 import { run } from './exec';
+import { ffmpegBin } from './bin';
 
 export const audioKey = (videoId: string) => `videos/${videoId}/audio.flac`;
 
 export async function extractAudio(videoId: string, input: string) {
-  if (!ffmpeg) throw new Error('ffmpeg binary missing');
   const dir = await mkdtemp(join(tmpdir(), 'cue-audio-'));
   try {
     const out = join(dir, 'audio.flac');
-    await run(ffmpeg, [
+    await run(ffmpegBin(), [
       '-v',
       'error',
       '-y',
@@ -41,11 +40,10 @@ export async function extractAudio(videoId: string, input: string) {
 const seconds = (ms: number) => (ms / 1000).toFixed(3);
 
 export async function cutAudio(input: string, { startMs, endMs }: Span): Promise<Buffer> {
-  if (!ffmpeg) throw new Error('ffmpeg binary missing');
   const dir = await mkdtemp(join(tmpdir(), 'cue-chunk-'));
   try {
     const out = join(dir, 'chunk.flac');
-    await run(ffmpeg, [
+    await run(ffmpegBin(), [
       '-v',
       'error',
       '-ss',
