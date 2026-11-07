@@ -15,6 +15,7 @@ const schema = z.object({
   S3_SECRET_KEY: z.string().default('cuecuecue'),
   YTDLP_PATH: z.string().default('yt-dlp'),
   API_PORT: z.coerce.number().int().default(4000),
+  WEB_ORIGIN: z.string().url().default('http://localhost:3000'),
   GROQ_API_KEY: z.string().optional(),
   GROQ_STT_MODEL: z.string().default('whisper-large-v3-turbo'),
   GEMINI_API_KEY: z.string().optional(),
