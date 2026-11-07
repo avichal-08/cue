@@ -64,9 +64,14 @@ export interface AnswerSource {
   text: string;
 }
 
+export interface Citation extends AnswerSource {
+  n: number;
+}
+
 export interface Answer {
   text: string;
-  citations: AnswerSource[];
+  grounded: boolean;
+  citations: Citation[];
 }
 
 export interface Answerer extends ModelInfo {

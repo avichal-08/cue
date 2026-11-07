@@ -2,6 +2,7 @@ import express from 'express';
 import { env } from '@cue/core';
 import { cors } from './cors';
 import { errorHandler } from './errors';
+import { answer } from './routes/answer';
 import { events } from './routes/events';
 import { health } from './routes/health';
 import { jobs } from './routes/jobs';
@@ -19,6 +20,7 @@ app.use('/videos', videos);
 app.use('/events', events);
 app.use('/jobs', jobs);
 app.use('/search', search);
+app.use('/answer', answer);
 app.use(errorHandler);
 
 const port = env().API_PORT;

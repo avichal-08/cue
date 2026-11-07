@@ -1,5 +1,8 @@
 import {
   ProviderError,
+  type Answer,
+  type Answerer,
+  type AnswerSource,
   type EmbedRole,
   type ImageEmbedder,
   type Ocr,
@@ -268,6 +271,97 @@ export function geminiReranker({
       } catch (err) {
         if (err instanceof ProviderError) throw err;
         throw new ProviderError('gemini', 502, `bad rerank reply: ${(err as Error).message}`);
+      }
+    },
+  };
+}
+
+const maxSourceChars = 1_500;
+
+export function answerPrompt(query: string, sources: AnswerSource[]) {
+  const listed = sources
+    .map((s, i) => {
+      const text = s.text.length > maxSourceChars ? `${s.text.slice(0, maxSourceChars)}…` : s.text;
+      return `[${i + 1}]\n${text}`;
+    })
+    .join('\n\n');
+  return [
+    `Question: ${query}`,
+    '',
+    `Answer using only the ${sources.length} numbered video excerpts below. Write 1 to 4 short sentences.`,
+    'After every claim put the number of the excerpt that supports it, like [2] or [1][3].',
+    'Do not use outside knowledge. If the excerpts do not answer the question, set grounded to false',
+    'and say in one sentence that the videos do not cover it, with no citations.',
+    '',
+    listed,
+  ].join('\n');
+}
+
+export function parseAnswerReply(body: unknown, sources: AnswerSource[]): Answer {
+  const parts = (body as { candidates?: { content?: { parts?: { text?: string }[] } }[] })
+    .candidates?.[0]?.content?.parts;
+  const raw = parts?.map((p) => p.text ?? '').join('') ?? '';
+  const reply = JSON.parse(raw || '{}') as { grounded?: unknown; answer?: unknown };
+  if (typeof reply.answer !== 'string') throw new ProviderError('gemini', 502, 'answer missing');
+
+  const valid = (n: number) => Number.isInteger(n) && n >= 1 && n <= sources.length;
+  const text = reply.answer
+    .replace(/\[(\d+)\]/g, (marker, n: string) => (valid(Number(n)) ? marker : ''))
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  const cited = [...new Set([...text.matchAll(/\[(\d+)\]/g)].map((m) => Number(m[1])))].sort(
+    (a, b) => a - b,
+  );
+  const grounded = reply.grounded !== false && cited.length > 0;
+  return {
+    text,
+    grounded,
+    citations: grounded ? cited.map((n) => ({ n, ...sources[n - 1]! })) : [],
+  };
+}
+
+export interface GeminiAnswererOptions {
+  apiKey: string;
+  model?: string;
+  fetch?: typeof fetch;
+}
+
+export function geminiAnswerer({
+  apiKey,
+  model = 'gemini-3.5-flash-lite',
+  fetch: fetchImpl = fetch,
+}: GeminiAnswererOptions): Answerer {
+  return {
+    id: `gemini/${model}`,
+    async answer(query, sources) {
+      if (!sources.length) return { text: '', grounded: false, citations: [] };
+      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: answerPrompt(query, sources) }] }],
+          generationConfig: {
+            temperature: 0.2,
+            responseMimeType: 'application/json',
+            responseSchema: {
+              type: 'OBJECT',
+              properties: { grounded: { type: 'BOOLEAN' }, answer: { type: 'STRING' } },
+              required: ['grounded', 'answer'],
+              propertyOrdering: ['grounded', 'answer'],
+            },
+          },
+        }),
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+      }
+      try {
+        return parseAnswerReply(await res.json(), sources);
+      } catch (err) {
+        if (err instanceof ProviderError) throw err;
+        throw new ProviderError('gemini', 502, `bad answer reply: ${(err as Error).message}`);
       }
     },
   };
