@@ -2,6 +2,7 @@ import type { Job } from 'bullmq';
 import type { Stage, StageJob } from '@cue/core';
 import { decode } from './decode';
 import { segment } from './segment';
+import { transcribe } from './transcribe';
 
 export interface StageContext {
   progress(percent: number): Promise<void>;
@@ -17,7 +18,7 @@ const stub: Handler = (job) => {
 export const handlers: Record<Stage, Handler> = {
   decode,
   segment,
-  transcribe: stub,
+  transcribe,
   see: stub,
   index: stub,
 };
