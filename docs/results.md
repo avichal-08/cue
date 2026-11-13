@@ -1,6 +1,6 @@
 # Results
 
-These numbers come from the eval harness ([evals.md](evals.md)) and were measured on 2026-11-13, after the visual similarity floor was lowered to 0.55 ([decision 0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md#update-2026-11-13-visual-floor-lowered-to-055)). Each section gives the command that reproduces it.
+These numbers come from the eval harness ([evals.md](evals.md)) and were measured on 2026-11-13, after the visual similarity floor was lowered to 0.55 ([search: fusion](components/search.md#4-fusion)). Each section gives the command that reproduces it.
 
 **The library** has 6 short videos, 16 minutes in total:
 
@@ -75,7 +75,7 @@ The rerank is most of a search's time and all of its cost.
 
 - **A 100-clip gallery is 10× easier than the full 1,000.** Published 1k-A numbers aren't comparable.
 - **Frames do the work.** Most clips are cooking, sports, music or gameplay with little useful speech. Adding transcript, on-screen text and keyword search to frames costs 4 points of recall@1.
-- **The text rerank hurts here.** It reads only transcripts and on-screen text, so it can't see why a visual match is right. In 30 of the 100 queries it scored the right clip below its cutoff and dropped it, and in 11 more it pushed it down; it helped in 8. 6 reranks failed on rate limits and kept the fused order. This is the main open problem the benchmark found.
+- **The text rerank hurts here.** It reads only transcripts and on-screen text, so it can't see why a visual match is right. In 30 of the 100 queries it scored the right clip below its cutoff and dropped it, and in 11 more it pushed it down; it helped in 8. 6 reranks failed on rate limits and kept the fused order. Since then, the text rerank keeps candidates matched only by their frame in their fused slot instead of judging them ([rerank: evidence rule](components/rerank.md#evidence-rule)). The row above is from before that change; it will be rerun once the free-tier quota resets.
 - **Keyframes in the rerank** couldn't be measured: the free-tier Flash-Lite quota ran out after the first query.
-- **The visual floor.** Before it was lowered from 0.65 to 0.55, fused recall@1 was 35% and recall@10 only 41%, because the floor discarded two thirds of the true frame matches ([decision 0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md#update-2026-11-13-visual-floor-lowered-to-055)).
+- **The visual floor.** Before it was lowered from 0.65 to 0.55, fused recall@1 was 35% and recall@10 only 41%, because the floor discarded two thirds of the true frame matches ([search: fusion](components/search.md#4-fusion)).
 - **Ingest.** The 100 clips (about 25 minutes of video) indexed with no failures.

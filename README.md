@@ -19,7 +19,7 @@ Indexing takes **87 min per hour of video** and costs **$0.42 per hour** at paid
 
 The set is small and built on the demo library, so read it as evidence of what each part adds rather than a benchmark score.
 
-On **MSR-VTT** (100 clips from the 1k-A test split, mostly visual), fused search finds the right clip first **55%** of the time and in the top 10 **86%** of the time. The text-only rerank drops that to 39%, because it can't see frames; fixing that is next. [docs/results.md](docs/results.md) has every table, including each signal on its own, latency by phase and cost by operation. [docs/evals.md](docs/evals.md) covers how to rerun them.
+On **MSR-VTT** (100 clips from the 1k-A test split, mostly visual), fused search finds the right clip first **55%** of the time and in the top 10 **86%** of the time. The text-only rerank dropped that to 39% because it couldn't see frames. It now leaves frame-only matches in place, and that change is still to be measured. [docs/results.md](docs/results.md) has every table, including each signal on its own, latency by phase and cost by operation. [docs/evals.md](docs/evals.md) covers how to rerun them.
 
 ![cue high level design](docs/diagrams/architecture.png)
 
@@ -101,8 +101,9 @@ Ingest and search work end to end:
   timings, keyframe embeddings and OCR, text embeddings with a cache, live progress in the UI.
 - **Search**: hybrid retrieval, rerank with reasons, clips snapped to word boundaries, grounded
   answers with clickable citations.
-
 - **Evals**: a labelled timestamp set, signal ablations, an MSR-VTT subset, per-call cost
   tracking, and ingest and search speed. Results are above.
+- **Reliability**: provider rate limiting with shared backoff, a failed-jobs view with retry, and
+  a dry-run-first cleanup of orphaned storage.
 
-Next: a rerank that doesn't penalise visual matches, faster OCR, then hardening and a shorts generator.
+Next: rerun MSR-VTT with the rerank fix, faster OCR, more tests and CI, then a shorts generator.

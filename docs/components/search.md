@@ -73,11 +73,25 @@ One `db.batch`, which Neon runs as one transaction in one round trip:
 3. Every hit keeps its rank and raw score per modality; these become `matchedBy` in the
    response.
 
+**Floor calibration.** All three floors started at 0.65
+([0003](../decisions/0003-hybrid-retrieval-with-similarity-floors.md)). MSR-VTT showed that was
+far too high for frames: across 100 captions, the right clip's best frame scored 0.56 to 0.69
+(p10 to p90) and the best wrong clip 0.57 to 0.65, so a high floor mostly removed true matches.
+
+| visual floor | right clips kept | MSR-VTT fused recall@1 | demo hit@1 ±5s, with rerank |
+| ------------ | ---------------- | ---------------------- | --------------------------- |
+| 0.65         | 33 of 100        | 35%                    | 83.8%                       |
+| 0.55         | 96 of 100        | 55%                    | 91.9%                       |
+
+0.50 scored the same as 0.55 on both sets. Text-to-text similarities sit higher, so transcript
+and OCR stay at 0.65.
+
 ## 5. Rerank
 
 The top 20 fused hits are scored 0 to 10 by Gemini Flash with a short reason, optionally
-looking at keyframes (`keyframes: true`). Hits below 0.3 are dropped. Segments with no speech,
-on-screen text or image skip the model and keep their fused position. On any failure the fused
+looking at keyframes (`keyframes: true`). Hits below 0.3 are dropped. Segments the model can't judge
+(no speech, on-screen text or image, or in text mode a match on the keyframe alone) skip the
+model and keep their fused slot. On any failure the fused
 order is kept and the response says so. Details: [rerank](rerank.md).
 
 ## 6. Clips
@@ -89,7 +103,7 @@ unused one starts a clip. A neighbour from the same video joins only if all thre
 - the clip stays at most 90 s long;
 - its relevance is at least 0.9 of the seed's.
 
-Relevance is the rerank score, or the fused score when the rerank didn't run. A weaker
+Relevance is the rerank score, or the fused score when the rerank didn't run or held the hit back. A weaker
 neighbour is left out and can start a clip of its own, so a single relevant segment can't
 pull a whole stretch of talk in with it. A clip ranks by its seed, and clips are cut to `limit`.
 
@@ -208,7 +222,8 @@ Measured on Neon and the Gemini free tier with three short test videos:
 | `mergeRatio`     | `clips.ts`    | 0.9 of the seed's relevance          |
 | `padMs`          | `snap.ts`     | 400                                  |
 
-All of these come from a handful of synthetic test videos. The M3 evals will tune them.
+The visual floor is calibrated on MSR-VTT, as above. The rest come from synthetic test videos
+and the demo set ([results](../results.md)).
 
 ## Limits
 

@@ -68,6 +68,7 @@ curl localhost:4000/health
 | `GROQ_STT_MODEL`     | `whisper-large-v3-turbo` |                                        |
 | `GEMINI_EMBED_MODEL` | `gemini-embedding-2`     |                                        |
 | `GEMINI_FLASH_MODEL` | `gemini-3.5-flash-lite`  | OCR, rerank and answers                |
+| `PROVIDER_RPM`       | none                     | client-side request limits, see below  |
 | `YTDLP_PATH`         | `yt-dlp`                 |                                        |
 | `FFMPEG_PATH`        | bundled binary           | set this to use a system ffmpeg        |
 | `FFPROBE_PATH`       | bundled binary           | set this to use a system ffprobe       |
@@ -96,6 +97,30 @@ It serves everything on http://localhost (port 80) behind Caddy, and keeps its o
 ```bash
 docker compose -f infra/compose.prod.yml --env-file .env down -v
 ```
+
+## Rate limits
+
+Every Groq and Gemini call goes through one limiter per process. `PROVIDER_RPM` spaces calls to stay under a model's requests per minute, for example:
+
+```
+PROVIDER_RPM=gemini/gemini-3.5-flash-lite=15,gemini/gemini-embedding-2=100
+```
+
+Set it from the limits shown in AI Studio and the Groq console; models left out are not spaced. With or without it:
+
+- after a 429, every call to that model waits out the `retry-after` the provider asked for;
+- a daily quota that is used up stops calls to that model for 15 minutes, and a stage that hits it fails at once instead of spending its retries;
+- search waits at most 2 s for a slot, then skips the rerank or returns 429.
+
+## Failed jobs and cleanup
+
+A stage that runs out of attempts shows up on the **Failed jobs** page (`/jobs`), with its error. Retry resumes the video from its first unfinished stage; Discard only removes the job.
+
+```bash
+pnpm cleanup
+```
+
+lists storage objects under `videos/` whose video row is gone, and uploads that were started but never completed more than a day ago. It changes nothing until you pass `--delete`, which removes exactly the listed objects and video rows.
 
 ## Reset
 

@@ -49,6 +49,18 @@ url ─────► video row ───────────────�
   or audio seconds. Worker calls carry their video and stage. Written in batches by
   `recordProviderCalls` and priced only by the evals.
 
+## Failures and limits
+
+- **Retries.** A stage job gets 3 attempts with exponential backoff. Inside a stage, provider
+  calls that hit a 429 or a 5xx are retried with the provider's `retry-after`.
+- **Rate limits.** All provider calls pass one limiter per process: optional requests per
+  minute per model, a shared cooldown after a 429, and a pause when a daily quota is used up, so
+  that stage fails at once instead of retrying ([local.md](local.md#rate-limits)).
+- **Dead letters.** Jobs that run out of attempts stay in their queue's failed set. `GET
+/jobs/failed` and the Failed jobs page list them, with retry and discard.
+- **Cleanup.** `pnpm cleanup` finds storage objects with no video row and uploads abandoned for
+  over a day; it deletes them only with `--delete`.
+
 ## Search
 
 ```

@@ -17,21 +17,24 @@ responses are JSON. Request bodies are validated with zod.
 
 ## Endpoints
 
-| Method | Path                   | Purpose                                      |
-| ------ | ---------------------- | -------------------------------------------- |
-| GET    | `/health`              | database and Redis status                    |
-| POST   | `/videos/uploads`      | start an upload, get a presigned PUT URL     |
-| POST   | `/videos/:id/complete` | finish an upload: hash, dedupe, ingest       |
-| POST   | `/videos/url`          | ingest from a link                           |
-| GET    | `/videos`              | list videos                                  |
-| GET    | `/videos/:id`          | one video with stage status and playback URL |
-| GET    | `/videos/:id/segments` | segments with transcript, OCR and keyframes  |
-| POST   | `/videos/:id/retry`    | rerun a failed video from its failed stage   |
-| GET    | `/events`              | server-sent ingest progress                  |
-| POST   | `/search`              | ranked, explained clips for a query          |
-| POST   | `/answer`              | grounded answer with citations to clips      |
-| GET    | `/stats/ingest`        | per-video stage times and provider usage     |
-| GET    | `/stats/usage`         | provider usage in a time window              |
+| Method | Path                     | Purpose                                      |
+| ------ | ------------------------ | -------------------------------------------- |
+| GET    | `/health`                | database and Redis status                    |
+| POST   | `/videos/uploads`        | start an upload, get a presigned PUT URL     |
+| POST   | `/videos/:id/complete`   | finish an upload: hash, dedupe, ingest       |
+| POST   | `/videos/url`            | ingest from a link                           |
+| GET    | `/videos`                | list videos                                  |
+| GET    | `/videos/:id`            | one video with stage status and playback URL |
+| GET    | `/videos/:id/segments`   | segments with transcript, OCR and keyframes  |
+| POST   | `/videos/:id/retry`      | rerun a failed video from its failed stage   |
+| GET    | `/jobs/failed`           | stage jobs that ran out of attempts          |
+| POST   | `/jobs/:stage/:id/retry` | retry one failed job's video                 |
+| DELETE | `/jobs/:stage/:id`       | discard one failed job                       |
+| GET    | `/events`                | server-sent ingest progress                  |
+| POST   | `/search`                | ranked, explained clips for a query          |
+| POST   | `/answer`                | grounded answer with citations to clips      |
+| GET    | `/stats/ingest`          | per-video stage times and provider usage     |
+| GET    | `/stats/usage`           | provider usage in a time window              |
 
 ### GET /health
 
@@ -84,6 +87,40 @@ in order.
 Only for videos with status `failed` that are not duplicates.
 
 `202 { videoId, from }` where `from` is the first stage that will run. 409 otherwise.
+
+### GET /jobs/failed
+
+`?limit=` (1 to 200, default 50). Failed jobs across all stage queues, newest first:
+
+```json
+{
+  "jobs": [
+    {
+      "id": "…-see",
+      "stage": "see",
+      "videoId": "…",
+      "title": "Rust in 100 Seconds",
+      "videoStatus": "failed",
+      "error": "gemini 429: quota per day used up for …",
+      "attempts": 1,
+      "failedAt": "2026-11-13T13:43:55.076Z"
+    }
+  ]
+}
+```
+
+A job stays here until it is retried or discarded, or until the queue's 5,000 most recent
+failures push it out. `title` is `null` when the video row is gone.
+
+### POST /jobs/:stage/:id/retry
+
+Resets the video to `pending` and resumes it from its first unfinished stage, like
+`POST /videos/:id/retry`. `202 { videoId, from }`. 404 if there is no failed job with that id,
+410 if its video is gone (the job is discarded).
+
+### DELETE /jobs/:stage/:id
+
+Removes one failed job from its queue. The video row and its files are left alone. 204, or 404.
 
 ### GET /events
 
