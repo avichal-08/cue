@@ -1,4 +1,5 @@
 import { ProviderError, type SpeechToText, type Transcript } from './providers';
+import { metered } from './usage';
 
 const endpoint = 'https://api.groq.com/openai/v1/audio/transcriptions';
 
@@ -13,6 +14,7 @@ const extensions: Record<string, string> = {
 
 interface VerboseJson {
   text?: string;
+  duration?: number;
   language?: string;
   words?: { word: string; start: number; end: number }[];
 }
@@ -61,13 +63,21 @@ export function groqSpeechToText({
       form.append('temperature', '0');
       if (language) form.append('language', language);
 
-      const res = await fetchImpl(endpoint, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${apiKey}` },
-        body: form,
+      return metered({ provider: 'groq', model, operation: 'transcribe' }, async () => {
+        const res = await fetchImpl(endpoint, {
+          method: 'POST',
+          headers: { authorization: `Bearer ${apiKey}` },
+          body: form,
+        });
+        if (!res.ok)
+          throw new ProviderError('groq', res.status, await res.text(), retryAfterMs(res));
+        const body = (await res.json()) as VerboseJson;
+        const value = toTranscript(body);
+        const audioMs = body.duration
+          ? Math.round(body.duration * 1000)
+          : (value.words.at(-1)?.endMs ?? 0);
+        return { value, usage: { audioMs } };
       });
-      if (!res.ok) throw new ProviderError('groq', res.status, await res.text(), retryAfterMs(res));
-      return toTranscript((await res.json()) as VerboseJson);
     },
   };
 }

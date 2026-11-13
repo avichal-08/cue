@@ -11,6 +11,7 @@ import {
   type RerankResult,
   type TextEmbedder,
 } from './providers';
+import { geminiUsage, metered } from './usage';
 
 const base = 'https://generativelanguage.googleapis.com/v1beta';
 const maxImagesPerCall = 6;
@@ -55,6 +56,20 @@ export function geminiEmbedder({
   fetch: fetchImpl = fetch,
 }: GeminiOptions): TextEmbedder & ImageEmbedder {
   async function call(parts: Part[]): Promise<number[][]> {
+    const texts = parts.flatMap((p) => ('text' in p ? [p.text] : []));
+    const images = parts.length - texts.length;
+    return metered(
+      {
+        provider: 'gemini',
+        model,
+        operation: images ? 'embed-image' : 'embed-text',
+        request: images ? { images } : { texts: texts.length, chars: texts.join('').length },
+      },
+      async () => ({ value: await send(parts) }),
+    );
+  }
+
+  async function send(parts: Part[]): Promise<number[][]> {
     const res = await fetchImpl(`${base}/models/${model}:batchEmbedContents`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
@@ -134,37 +149,39 @@ export function geminiOcr({
 }: GeminiOcrOptions): Ocr {
   return {
     id: `gemini/${model}`,
-    async read(image) {
-      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { inlineData: { mimeType: imageMime(image), data: image.toString('base64') } },
-                { text: ocrPrompt },
-              ],
+    read: (image) =>
+      metered({ provider: 'gemini', model, operation: 'ocr', request: { images: 1 } }, async () => {
+        const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { inlineData: { mimeType: imageMime(image), data: image.toString('base64') } },
+                  { text: ocrPrompt },
+                ],
+              },
+            ],
+            generationConfig: {
+              temperature: 0,
+              responseMimeType: 'application/json',
+              responseSchema: { type: 'ARRAY', items: { type: 'STRING' } },
             },
-          ],
-          generationConfig: {
-            temperature: 0,
-            responseMimeType: 'application/json',
-            responseSchema: { type: 'ARRAY', items: { type: 'STRING' } },
-          },
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
-      }
-      try {
-        return parseOcrReply(await res.json()).map((text) => ({ text }));
-      } catch (err) {
-        if (err instanceof ProviderError) throw err;
-        throw new ProviderError('gemini', 502, `bad ocr reply: ${(err as Error).message}`);
-      }
-    },
+          }),
+        });
+        if (!res.ok) {
+          const body = await res.text();
+          throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+        }
+        const body: unknown = await res.json();
+        try {
+          return { value: parseOcrReply(body).map((text) => ({ text })), usage: geminiUsage(body) };
+        } catch (err) {
+          if (err instanceof ProviderError) throw err;
+          throw new ProviderError('gemini', 502, `bad ocr reply: ${(err as Error).message}`);
+        }
+      }),
   };
 }
 
@@ -238,40 +255,52 @@ export function geminiReranker({
           });
       });
 
-      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          contents: [{ parts }],
-          generationConfig: {
-            temperature: 0,
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'ARRAY',
-              items: {
-                type: 'OBJECT',
-                properties: {
-                  id: { type: 'STRING' },
-                  reason: { type: 'STRING' },
-                  score: { type: 'NUMBER' },
+      const images = candidates.filter((c) => c.image).length;
+      return metered(
+        {
+          provider: 'gemini',
+          model,
+          operation: 'rerank',
+          request: { texts: candidates.length, images },
+        },
+        async () => {
+          const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+            body: JSON.stringify({
+              contents: [{ parts }],
+              generationConfig: {
+                temperature: 0,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                  type: 'ARRAY',
+                  items: {
+                    type: 'OBJECT',
+                    properties: {
+                      id: { type: 'STRING' },
+                      reason: { type: 'STRING' },
+                      score: { type: 'NUMBER' },
+                    },
+                    required: ['id', 'reason', 'score'],
+                    propertyOrdering: ['id', 'reason', 'score'],
+                  },
                 },
-                required: ['id', 'reason', 'score'],
-                propertyOrdering: ['id', 'reason', 'score'],
               },
-            },
-          },
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
-      }
-      try {
-        return parseRerankReply(await res.json(), candidates, topK);
-      } catch (err) {
-        if (err instanceof ProviderError) throw err;
-        throw new ProviderError('gemini', 502, `bad rerank reply: ${(err as Error).message}`);
-      }
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.text();
+            throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+          }
+          const body: unknown = await res.json();
+          try {
+            return { value: parseRerankReply(body, candidates, topK), usage: geminiUsage(body) };
+          } catch (err) {
+            if (err instanceof ProviderError) throw err;
+            throw new ProviderError('gemini', 502, `bad rerank reply: ${(err as Error).message}`);
+          }
+        },
+      );
     },
   };
 }
@@ -336,33 +365,39 @@ export function geminiAnswerer({
     id: `gemini/${model}`,
     async answer(query, sources) {
       if (!sources.length) return { text: '', grounded: false, citations: [] };
-      const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: answerPrompt(query, sources) }] }],
-          generationConfig: {
-            temperature: 0.2,
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: 'OBJECT',
-              properties: { grounded: { type: 'BOOLEAN' }, answer: { type: 'STRING' } },
-              required: ['grounded', 'answer'],
-              propertyOrdering: ['grounded', 'answer'],
-            },
-          },
-        }),
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
-      }
-      try {
-        return parseAnswerReply(await res.json(), sources);
-      } catch (err) {
-        if (err instanceof ProviderError) throw err;
-        throw new ProviderError('gemini', 502, `bad answer reply: ${(err as Error).message}`);
-      }
+      return metered(
+        { provider: 'gemini', model, operation: 'answer', request: { texts: sources.length } },
+        async () => {
+          const res = await fetchImpl(`${base}/models/${model}:generateContent`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: answerPrompt(query, sources) }] }],
+              generationConfig: {
+                temperature: 0.2,
+                responseMimeType: 'application/json',
+                responseSchema: {
+                  type: 'OBJECT',
+                  properties: { grounded: { type: 'BOOLEAN' }, answer: { type: 'STRING' } },
+                  required: ['grounded', 'answer'],
+                  propertyOrdering: ['grounded', 'answer'],
+                },
+              },
+            }),
+          });
+          if (!res.ok) {
+            const body = await res.text();
+            throw new ProviderError('gemini', res.status, body, retryAfterMs(body, res));
+          }
+          const body: unknown = await res.json();
+          try {
+            return { value: parseAnswerReply(body, sources), usage: geminiUsage(body) };
+          } catch (err) {
+            if (err instanceof ProviderError) throw err;
+            throw new ProviderError('gemini', 502, `bad answer reply: ${(err as Error).message}`);
+          }
+        },
+      );
     },
   };
 }
