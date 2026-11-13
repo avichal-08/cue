@@ -1,0 +1,203 @@
+{
+  "name": "local-moments",
+  "queries": [
+    {
+      "id": "rust-memory-model",
+      "q": "how does rust stay memory safe without a garbage collector",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "41.2", "end": "47.8" }]
+    },
+    {
+      "id": "rust-creator",
+      "q": "who started the rust project",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "15.2", "end": "21.6" }]
+    },
+    {
+      "id": "rust-name",
+      "q": "where does the name rust come from",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "19.0", "end": "21.6" }]
+    },
+    {
+      "id": "rust-owner-scope",
+      "q": "what happens to memory when its owner goes out of scope",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "60.7", "end": "69.8" }]
+    },
+    {
+      "id": "rust-borrow-checker",
+      "q": "borrow checker rules at compile time",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "73.9", "end": "83.6" }]
+    },
+    {
+      "id": "rust-cargo",
+      "q": "what is rust's package manager called",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "88.0", "end": "92.4" }]
+    },
+    {
+      "id": "rust-mutable",
+      "q": "how do you make a variable mutable in rust",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "104.9", "end": "109.4" }]
+    },
+    {
+      "id": "rust-malloc-onscreen",
+      "q": "c code calling malloc and calloc",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "32.7", "end": "39.9" }]
+    },
+    {
+      "id": "go-creator",
+      "q": "which inventor of the c language helped create go",
+      "expect": [{ "video": "golang in 60 seconds", "start": "14.3", "end": "22.6" }]
+    },
+    {
+      "id": "go-v1",
+      "q": "when was go 1.0 released",
+      "expect": [{ "video": "golang in 60 seconds", "start": "22.6", "end": "26.1" }]
+    },
+    {
+      "id": "go-name",
+      "q": "why is it called go and not golang",
+      "expect": [{ "video": "golang in 60 seconds", "start": "26.1", "end": "31.6" }]
+    },
+    {
+      "id": "go-compile-speed",
+      "q": "why does go compile so fast",
+      "expect": [{ "video": "golang in 60 seconds", "start": "36.6", "end": "42.4" }]
+    },
+    {
+      "id": "go-modules",
+      "q": "how do you track dependencies in a go project",
+      "expect": [{ "video": "golang in 60 seconds", "start": "85.9", "end": "95.8" }]
+    },
+    {
+      "id": "go-short-assign",
+      "q": "short assignment syntax that infers the type",
+      "expect": [{ "video": "golang in 60 seconds", "start": "101.8", "end": "113.4" }]
+    },
+    {
+      "id": "go-pointers",
+      "q": "does go allow pointer arithmetic",
+      "expect": [{ "video": "golang in 60 seconds", "start": "117.4", "end": "127.1" }]
+    },
+    {
+      "id": "go-goroutines",
+      "q": "how does go handle concurrency",
+      "expect": [{ "video": "golang in 60 seconds", "start": "127.1", "end": "136.4" }]
+    },
+    {
+      "id": "go-build-terminal",
+      "q": "terminal running go build on hello.go",
+      "expect": [{ "video": "golang in 60 seconds", "start": "78.7", "end": "85.0" }]
+    },
+    {
+      "id": "pca-what",
+      "q": "what does pca do to data with thousands of dimensions",
+      "expect": [{ "video": "pca and ica", "start": "0.3", "end": "14.2" }]
+    },
+    {
+      "id": "pca-height-example",
+      "q": "measuring height in both centimeters and inches",
+      "expect": [{ "video": "pca and ica", "start": "16.3", "end": "30.3" }]
+    },
+    {
+      "id": "pca-covariance",
+      "q": "covariance matrix",
+      "expect": [{ "video": "pca and ica", "start": "48.2", "end": "56.3" }]
+    },
+    {
+      "id": "pca-eigen",
+      "q": "eigenvector with the largest eigenvalue",
+      "expect": [{ "video": "pca and ica", "start": "55.6", "end": "62.1" }]
+    },
+    {
+      "id": "pca-visualize",
+      "q": "reduce data to two or three dimensions so you can visualize it",
+      "expect": [{ "video": "pca and ica", "start": "73.6", "end": "86.7" }]
+    },
+    {
+      "id": "pca-overfitting",
+      "q": "should i use pca to fix overfitting",
+      "expect": [{ "video": "pca and ica", "start": "94.2", "end": "101.7" }]
+    },
+    {
+      "id": "pca-variance",
+      "q": "choose how many components to keep by explained variance",
+      "expect": [{ "video": "pca and ica", "start": "106.6", "end": "121.6" }]
+    },
+    {
+      "id": "ica-party",
+      "q": "two people talking at a party recorded by two microphones",
+      "expect": [{ "video": "pca and ica", "start": "133.6", "end": "149.0" }]
+    },
+    {
+      "id": "pca-vs-ica",
+      "q": "key difference between pca and ica",
+      "expect": [{ "video": "pca and ica", "start": "163.0", "end": "180.6" }]
+    },
+    {
+      "id": "raft-first-step",
+      "q": "what must happen before a raft group accepts writes",
+      "expect": [{ "video": "consensus", "start": "24.0", "end": "35.9" }]
+    },
+    {
+      "id": "raft-propose",
+      "q": "how does a node get elected leader",
+      "expect": [{ "video": "consensus", "start": "35.9", "end": "45.9" }]
+    },
+    {
+      "id": "raft-conflict",
+      "q": "what if every server asks to be leader at the same time",
+      "expect": [{ "video": "consensus", "start": "45.9", "end": "59.8" }]
+    },
+    {
+      "id": "raft-backoff",
+      "q": "random delay before requesting to become leader",
+      "expect": [{ "video": "consensus", "start": "59.8", "end": "82.6" }]
+    },
+    {
+      "id": "raft-drawing",
+      "q": "i wanna be the leader",
+      "expect": [{ "video": "consensus", "start": "47.0", "end": "68.0" }]
+    },
+    {
+      "id": "books-inherited",
+      "q": "your ideas are inherited from your parents and culture",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "0.1", "end": "8.7" },
+        { "video": "The Pleasures and Powers from Reading Books", "start": "167.3", "end": "175.7" }
+      ]
+    },
+    {
+      "id": "books-boring-thoughts",
+      "q": "if your thoughts were printed out they would be boring",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "56.1", "end": "67.6" }
+      ]
+    },
+    {
+      "id": "books-rome",
+      "q": "travel to ancient rome with marcus aurelius",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "105.9", "end": "115.9" }
+      ]
+    },
+    {
+      "id": "books-addiction",
+      "q": "reading as the best addiction",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "206.7", "end": "214.0" }
+      ]
+    },
+    {
+      "id": "books-recommendations",
+      "q": "where can i find his list of books to read",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "214.0", "end": "225.6" }
+      ]
+    },
+    {
+      "id": "books-author-onscreen",
+      "q": "Robert Greene",
+      "expect": [
+        { "video": "The Pleasures and Powers from Reading Books", "start": "27.0", "end": "32.1" }
+      ]
+    }
+  ]
+}

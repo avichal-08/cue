@@ -1,0 +1,9 @@
+{
+  "name": "moments",
+  "description": "Hand-labelled moments in the local demo library: spoken paraphrases, exact terms and on-screen-only text.",
+  "dataset": "../datasets/local-moments.json",
+  "search": { "limit": 10, "keyframes": false },
+  "k": [1, 5, 10],
+  "windowSec": 5,
+  "iou": [0.3, 0.5]
+}
