@@ -14,6 +14,8 @@ const configSchema = z.object({
     })
     .default({}),
   k: z.array(z.number().int().min(1)).nonempty().default([1, 5, 10]),
+  windowSec: z.number().min(0).default(5),
+  iou: z.array(z.number().gt(0).max(1)).default([0.3, 0.5]),
   concurrency: z.number().int().min(1).max(8).default(1),
 });
 

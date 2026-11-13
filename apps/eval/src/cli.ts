@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { client } from './api';
 import { loadConfig } from './config';
 import { loadDataset } from './dataset';
-import { firstCorrectRank, mrr, recallAt, summarize } from './metrics';
+import { firstCorrectRank, metricsFor, summarize } from './metrics';
 import { gitCommit, writeReport } from './report';
 import { resolveTargets, runQueries } from './runner';
 
@@ -40,7 +40,7 @@ async function main() {
     console.log(`[${done}/${queries.length}] ${run.id} ${rank}${latency}`);
   });
 
-  const summary = summarize(runs, [...config.k.map(recallAt), mrr]);
+  const summary = summarize(runs, metricsFor(config));
   const { path: _path, datasetPath: _datasetPath, ...settings } = config;
   const out = await writeReport(resolve(root, 'results'), {
     name: config.name,

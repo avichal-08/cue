@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { EvalConfig } from './config';
-import { firstCorrectRank, type Summary } from './metrics';
+import { bestIou, firstCorrectRank, spans, type MetricResult, type Summary } from './metrics';
 import type { QueryRun } from './runner';
 
 export interface Report {
@@ -28,6 +28,7 @@ export function gitCommit(): string | null {
 }
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
+const value = (m: MetricResult) => (m.format === 'pct' ? pct(m.value) : m.value.toFixed(3));
 const ms = (n: number | null) => (n === null ? 'n/a' : `${n} ms`);
 const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\s+/g, ' ');
 
@@ -39,25 +40,25 @@ export function toMarkdown(report: Report): string {
     ...(report.description ? [report.description, ''] : []),
     `dataset \`${report.dataset}\` · ${summary.queries} queries · commit \`${report.commit ?? 'unknown'}\` · ${report.finishedAt}`,
     '',
-    '| metric | value |',
-    '| --- | --- |',
-    ...Object.entries(summary.metrics).map(([name, value]) =>
-      name === 'mrr' ? `| ${name} | ${value.toFixed(3)} |` : `| ${name} | ${pct(value)} |`,
-    ),
-    `| latency p50 | ${ms(summary.latencyMs.p50)} |`,
-    `| latency p95 | ${ms(summary.latencyMs.p95)} |`,
-    `| errors | ${summary.errors} |`,
-    `| not reranked | ${summary.unreranked} |`,
+    '| metric | value | queries |',
+    '| --- | --- | --- |',
+    ...Object.entries(summary.metrics).map(([name, m]) => `| ${name} | ${value(m)} | ${m.n} |`),
+    `| latency p50 | ${ms(summary.latencyMs.p50)} | |`,
+    `| latency p95 | ${ms(summary.latencyMs.p95)} | |`,
+    `| errors | ${summary.errors} | |`,
+    `| not reranked | ${summary.unreranked} | |`,
     '',
-    '| id | query | rank | top hit | latency |',
-    '| --- | --- | --- | --- | --- |',
+    '| id | query | rank | top hit | iou@1 | latency |',
+    '| --- | --- | --- | --- | --- | --- |',
     ...report.runs.map((run) => {
       const rank = run.error ? 'error' : String(firstCorrectRank(run) ?? 'miss');
       const top = run.hits[0];
       const hit = top
         ? `${top.title} ${(top.startMs / 1000).toFixed(1)}–${(top.endMs / 1000).toFixed(1)}s`
         : '';
-      return `| ${run.id} | ${cell(run.q)} | ${rank} | ${cell(hit)} | ${ms(run.latencyMs)} |`;
+      const wanted = spans(run);
+      const overlap = wanted.length ? bestIou(top, wanted).toFixed(2) : '';
+      return `| ${run.id} | ${cell(run.q)} | ${rank} | ${cell(hit)} | ${overlap} | ${ms(run.latencyMs)} |`;
     }),
     '',
   ];
