@@ -1,0 +1,905 @@
+{
+  "name": "msrvtt-1k-a-100",
+  "queries": [
+    {
+      "id": "video7020",
+      "q": "a woman creating a fondant baby and flower",
+      "expect": [
+        {
+          "video": "msrvtt video7020"
+        }
+      ]
+    },
+    {
+      "id": "video7060",
+      "q": "a man extinguishes a fire outside",
+      "expect": [
+        {
+          "video": "msrvtt video7060"
+        }
+      ]
+    },
+    {
+      "id": "video7117",
+      "q": "people are singing on the beach",
+      "expect": [
+        {
+          "video": "msrvtt video7117"
+        }
+      ]
+    },
+    {
+      "id": "video7142",
+      "q": "an oriental femal is dressed in a pink wig with girlish clothing and is carrying a stuffed animal",
+      "expect": [
+        {
+          "video": "msrvtt video7142"
+        }
+      ]
+    },
+    {
+      "id": "video7152",
+      "q": "a person is swimming in some white water rapids",
+      "expect": [
+        {
+          "video": "msrvtt video7152"
+        }
+      ]
+    },
+    {
+      "id": "video7163",
+      "q": "a young man is touching a young girls back",
+      "expect": [
+        {
+          "video": "msrvtt video7163"
+        }
+      ]
+    },
+    {
+      "id": "video7174",
+      "q": "a man rides a lft to the top of a mountain",
+      "expect": [
+        {
+          "video": "msrvtt video7174"
+        }
+      ]
+    },
+    {
+      "id": "video7204",
+      "q": "a small boy is crying and a car is showed",
+      "expect": [
+        {
+          "video": "msrvtt video7204"
+        }
+      ]
+    },
+    {
+      "id": "video7216",
+      "q": "a woman giving skin care tips",
+      "expect": [
+        {
+          "video": "msrvtt video7216"
+        }
+      ]
+    },
+    {
+      "id": "video7230",
+      "q": "a woman is talking about a baby stroller",
+      "expect": [
+        {
+          "video": "msrvtt video7230"
+        }
+      ]
+    },
+    {
+      "id": "video7341",
+      "q": "in an interview a person in advocating education among the populace",
+      "expect": [
+        {
+          "video": "msrvtt video7341"
+        }
+      ]
+    },
+    {
+      "id": "video7352",
+      "q": "a movie scene starring morgan freeman and men in armor running",
+      "expect": [
+        {
+          "video": "msrvtt video7352"
+        }
+      ]
+    },
+    {
+      "id": "video7362",
+      "q": "a person is cooking on stage",
+      "expect": [
+        {
+          "video": "msrvtt video7362"
+        }
+      ]
+    },
+    {
+      "id": "video7372",
+      "q": "someone is showing some drink",
+      "expect": [
+        {
+          "video": "msrvtt video7372"
+        }
+      ]
+    },
+    {
+      "id": "video7413",
+      "q": "there is a guy talking to his father",
+      "expect": [
+        {
+          "video": "msrvtt video7413"
+        }
+      ]
+    },
+    {
+      "id": "video7445",
+      "q": "a man is talking and playing a video game",
+      "expect": [
+        {
+          "video": "msrvtt video7445"
+        }
+      ]
+    },
+    {
+      "id": "video7500",
+      "q": "a soccer team walking out on the field",
+      "expect": [
+        {
+          "video": "msrvtt video7500"
+        }
+      ]
+    },
+    {
+      "id": "video7547",
+      "q": "there is a woman in her roomshe is a net idol show her new vedio",
+      "expect": [
+        {
+          "video": "msrvtt video7547"
+        }
+      ]
+    },
+    {
+      "id": "video7562",
+      "q": "article about nasa s johnson space center being broadcasted on news",
+      "expect": [
+        {
+          "video": "msrvtt video7562"
+        }
+      ]
+    },
+    {
+      "id": "video7572",
+      "q": "foreign language cooking show",
+      "expect": [
+        {
+          "video": "msrvtt video7572"
+        }
+      ]
+    },
+    {
+      "id": "video7583",
+      "q": "a princess tries not to cry in front of malificent",
+      "expect": [
+        {
+          "video": "msrvtt video7583"
+        }
+      ]
+    },
+    {
+      "id": "video7596",
+      "q": "a man and a woman are singing a song in a stage",
+      "expect": [
+        {
+          "video": "msrvtt video7596"
+        }
+      ]
+    },
+    {
+      "id": "video7632",
+      "q": "a man walks between two brick buildings a dusk",
+      "expect": [
+        {
+          "video": "msrvtt video7632"
+        }
+      ]
+    },
+    {
+      "id": "video7688",
+      "q": "one of two guys walking on a carton of eggs with bare feet",
+      "expect": [
+        {
+          "video": "msrvtt video7688"
+        }
+      ]
+    },
+    {
+      "id": "video7725",
+      "q": "young people sit around the edges of a room clapping and raising their arms while others dance in the center during a party",
+      "expect": [
+        {
+          "video": "msrvtt video7725"
+        }
+      ]
+    },
+    {
+      "id": "video7751",
+      "q": "two women rare sitting speaking on sites in los angeles",
+      "expect": [
+        {
+          "video": "msrvtt video7751"
+        }
+      ]
+    },
+    {
+      "id": "video7767",
+      "q": "a slideshow with captions",
+      "expect": [
+        {
+          "video": "msrvtt video7767"
+        }
+      ]
+    },
+    {
+      "id": "video7787",
+      "q": "various sports clips with music are shown",
+      "expect": [
+        {
+          "video": "msrvtt video7787"
+        }
+      ]
+    },
+    {
+      "id": "video7797",
+      "q": "a man is swimming in the swimming pool",
+      "expect": [
+        {
+          "video": "msrvtt video7797"
+        }
+      ]
+    },
+    {
+      "id": "video7829",
+      "q": "someone is putting a skeleton slide on a projector",
+      "expect": [
+        {
+          "video": "msrvtt video7829"
+        }
+      ]
+    },
+    {
+      "id": "video7839",
+      "q": "this is a vine sports compilation",
+      "expect": [
+        {
+          "video": "msrvtt video7839"
+        }
+      ]
+    },
+    {
+      "id": "video7909",
+      "q": "a woman holding a ribbon",
+      "expect": [
+        {
+          "video": "msrvtt video7909"
+        }
+      ]
+    },
+    {
+      "id": "video7939",
+      "q": "a man and woman stand together and cook in the kitchen",
+      "expect": [
+        {
+          "video": "msrvtt video7939"
+        }
+      ]
+    },
+    {
+      "id": "video7967",
+      "q": "a news anchor is interviewing a person on screen",
+      "expect": [
+        {
+          "video": "msrvtt video7967"
+        }
+      ]
+    },
+    {
+      "id": "video7979",
+      "q": "people talking about a fight",
+      "expect": [
+        {
+          "video": "msrvtt video7979"
+        }
+      ]
+    },
+    {
+      "id": "video8027",
+      "q": "a video game is played",
+      "expect": [
+        {
+          "video": "msrvtt video8027"
+        }
+      ]
+    },
+    {
+      "id": "video8070",
+      "q": "man driving a car in a video game",
+      "expect": [
+        {
+          "video": "msrvtt video8070"
+        }
+      ]
+    },
+    {
+      "id": "video8089",
+      "q": "a police officer drives his white car onto a grassy field and then back on to the street",
+      "expect": [
+        {
+          "video": "msrvtt video8089"
+        }
+      ]
+    },
+    {
+      "id": "video8124",
+      "q": "basketball players making a shot in the last seven seconds",
+      "expect": [
+        {
+          "video": "msrvtt video8124"
+        }
+      ]
+    },
+    {
+      "id": "video8245",
+      "q": "a warrior is fighting a battle",
+      "expect": [
+        {
+          "video": "msrvtt video8245"
+        }
+      ]
+    },
+    {
+      "id": "video8255",
+      "q": "a man is playing piano",
+      "expect": [
+        {
+          "video": "msrvtt video8255"
+        }
+      ]
+    },
+    {
+      "id": "video8265",
+      "q": "someone plays a guitar and sings on stage of a tv show",
+      "expect": [
+        {
+          "video": "msrvtt video8265"
+        }
+      ]
+    },
+    {
+      "id": "video8305",
+      "q": "in a music video a man is laying with women while singing",
+      "expect": [
+        {
+          "video": "msrvtt video8305"
+        }
+      ]
+    },
+    {
+      "id": "video8315",
+      "q": "three men were discussing the national football league",
+      "expect": [
+        {
+          "video": "msrvtt video8315"
+        }
+      ]
+    },
+    {
+      "id": "video8325",
+      "q": "a man cooks some food in a kitchen",
+      "expect": [
+        {
+          "video": "msrvtt video8325"
+        }
+      ]
+    },
+    {
+      "id": "video8335",
+      "q": "a beautiful waterfall is flowing into the pool of water below it as the camera pans around the area",
+      "expect": [
+        {
+          "video": "msrvtt video8335"
+        }
+      ]
+    },
+    {
+      "id": "video8346",
+      "q": "a man talks about a war between two generals one of which became king",
+      "expect": [
+        {
+          "video": "msrvtt video8346"
+        }
+      ]
+    },
+    {
+      "id": "video8441",
+      "q": "scene from a popular party",
+      "expect": [
+        {
+          "video": "msrvtt video8441"
+        }
+      ]
+    },
+    {
+      "id": "video8456",
+      "q": "a man talks to someone and also the camera",
+      "expect": [
+        {
+          "video": "msrvtt video8456"
+        }
+      ]
+    },
+    {
+      "id": "video8470",
+      "q": "high school wrestling match",
+      "expect": [
+        {
+          "video": "msrvtt video8470"
+        }
+      ]
+    },
+    {
+      "id": "video8480",
+      "q": "impoverished children are eating and a man is talking",
+      "expect": [
+        {
+          "video": "msrvtt video8480"
+        }
+      ]
+    },
+    {
+      "id": "video8492",
+      "q": "a man is very excited",
+      "expect": [
+        {
+          "video": "msrvtt video8492"
+        }
+      ]
+    },
+    {
+      "id": "video8556",
+      "q": "a group of people are stamp dancing on stage in front of a crowd",
+      "expect": [
+        {
+          "video": "msrvtt video8556"
+        }
+      ]
+    },
+    {
+      "id": "video8622",
+      "q": "a man has tried to solve a rubik s cube",
+      "expect": [
+        {
+          "video": "msrvtt video8622"
+        }
+      ]
+    },
+    {
+      "id": "video8657",
+      "q": "a man rides his motorcycle to a building",
+      "expect": [
+        {
+          "video": "msrvtt video8657"
+        }
+      ]
+    },
+    {
+      "id": "video8669",
+      "q": "anchor talking about a shows",
+      "expect": [
+        {
+          "video": "msrvtt video8669"
+        }
+      ]
+    },
+    {
+      "id": "video8679",
+      "q": "a man discussed a few products",
+      "expect": [
+        {
+          "video": "msrvtt video8679"
+        }
+      ]
+    },
+    {
+      "id": "video8689",
+      "q": "a multiplayer game of mario party is played",
+      "expect": [
+        {
+          "video": "msrvtt video8689"
+        }
+      ]
+    },
+    {
+      "id": "video8774",
+      "q": "there is a guy filling a toy with cotton to play with it",
+      "expect": [
+        {
+          "video": "msrvtt video8774"
+        }
+      ]
+    },
+    {
+      "id": "video8791",
+      "q": "a woman is demonstrating a nail painting technique",
+      "expect": [
+        {
+          "video": "msrvtt video8791"
+        }
+      ]
+    },
+    {
+      "id": "video8804",
+      "q": "two men are in the classroom and having conversation",
+      "expect": [
+        {
+          "video": "msrvtt video8804"
+        }
+      ]
+    },
+    {
+      "id": "video8815",
+      "q": "a man walking into a room with two kids with red helmets",
+      "expect": [
+        {
+          "video": "msrvtt video8815"
+        }
+      ]
+    },
+    {
+      "id": "video8825",
+      "q": "a woman holds up a leather jacket",
+      "expect": [
+        {
+          "video": "msrvtt video8825"
+        }
+      ]
+    },
+    {
+      "id": "video8836",
+      "q": "a woman is cooking food and a man is setting a table",
+      "expect": [
+        {
+          "video": "msrvtt video8836"
+        }
+      ]
+    },
+    {
+      "id": "video8866",
+      "q": "a news scene of the dog s exercise and diet",
+      "expect": [
+        {
+          "video": "msrvtt video8866"
+        }
+      ]
+    },
+    {
+      "id": "video8903",
+      "q": "there are crocodiles about to eat the group of people walking across the water",
+      "expect": [
+        {
+          "video": "msrvtt video8903"
+        }
+      ]
+    },
+    {
+      "id": "video8913",
+      "q": "a video about different sports",
+      "expect": [
+        {
+          "video": "msrvtt video8913"
+        }
+      ]
+    },
+    {
+      "id": "video8923",
+      "q": "women are modeling clothes",
+      "expect": [
+        {
+          "video": "msrvtt video8923"
+        }
+      ]
+    },
+    {
+      "id": "video8934",
+      "q": "cameras filming near accidents between cars in traffic",
+      "expect": [
+        {
+          "video": "msrvtt video8934"
+        }
+      ]
+    },
+    {
+      "id": "video8978",
+      "q": "band performing a hard rock song about diamonds in the sky",
+      "expect": [
+        {
+          "video": "msrvtt video8978"
+        }
+      ]
+    },
+    {
+      "id": "video9017",
+      "q": "the man is driving his motorbike fast and having problems on the race",
+      "expect": [
+        {
+          "video": "msrvtt video9017"
+        }
+      ]
+    },
+    {
+      "id": "video9027",
+      "q": "a group of young people are playing",
+      "expect": [
+        {
+          "video": "msrvtt video9027"
+        }
+      ]
+    },
+    {
+      "id": "video9037",
+      "q": "a women is sitting with her baby and two people talking about that",
+      "expect": [
+        {
+          "video": "msrvtt video9037"
+        }
+      ]
+    },
+    {
+      "id": "video9203",
+      "q": "the man is giving an informational speech to a group of people about telling someone something",
+      "expect": [
+        {
+          "video": "msrvtt video9203"
+        }
+      ]
+    },
+    {
+      "id": "video9223",
+      "q": "a man and a woman are sitting in front of a television and addressing and audience",
+      "expect": [
+        {
+          "video": "msrvtt video9223"
+        }
+      ]
+    },
+    {
+      "id": "video9233",
+      "q": "a man is giving a speech",
+      "expect": [
+        {
+          "video": "msrvtt video9233"
+        }
+      ]
+    },
+    {
+      "id": "video9243",
+      "q": "they are singing a song and playing a guitar in the stage",
+      "expect": [
+        {
+          "video": "msrvtt video9243"
+        }
+      ]
+    },
+    {
+      "id": "video9253",
+      "q": "people talking about their trip and how they are taken care of",
+      "expect": [
+        {
+          "video": "msrvtt video9253"
+        }
+      ]
+    },
+    {
+      "id": "video9302",
+      "q": "a guy trying to climb on a rope while another guy timing him",
+      "expect": [
+        {
+          "video": "msrvtt video9302"
+        }
+      ]
+    },
+    {
+      "id": "video9322",
+      "q": "a woman gets trapped in a burning trailer",
+      "expect": [
+        {
+          "video": "msrvtt video9322"
+        }
+      ]
+    },
+    {
+      "id": "video9332",
+      "q": "a girl plays a videogame",
+      "expect": [
+        {
+          "video": "msrvtt video9332"
+        }
+      ]
+    },
+    {
+      "id": "video9342",
+      "q": "the water safety teams arrives with the safety devices and water bike to save a person who had been drifted away",
+      "expect": [
+        {
+          "video": "msrvtt video9342"
+        }
+      ]
+    },
+    {
+      "id": "video9352",
+      "q": "a man is talking to a crowd",
+      "expect": [
+        {
+          "video": "msrvtt video9352"
+        }
+      ]
+    },
+    {
+      "id": "video9403",
+      "q": "i see a prince trying to get a girl and i see peter pan play around",
+      "expect": [
+        {
+          "video": "msrvtt video9403"
+        }
+      ]
+    },
+    {
+      "id": "video9451",
+      "q": "kids feeding and playing with the horse",
+      "expect": [
+        {
+          "video": "msrvtt video9451"
+        }
+      ]
+    },
+    {
+      "id": "video9511",
+      "q": "a person is riding red car on road",
+      "expect": [
+        {
+          "video": "msrvtt video9511"
+        }
+      ]
+    },
+    {
+      "id": "video9521",
+      "q": "a person is passing by a jolly group of men",
+      "expect": [
+        {
+          "video": "msrvtt video9521"
+        }
+      ]
+    },
+    {
+      "id": "video9548",
+      "q": "a reporter asks questions at a gun range",
+      "expect": [
+        {
+          "video": "msrvtt video9548"
+        }
+      ]
+    },
+    {
+      "id": "video9589",
+      "q": "a woman plays instruments in a field",
+      "expect": [
+        {
+          "video": "msrvtt video9589"
+        }
+      ]
+    },
+    {
+      "id": "video9639",
+      "q": "women poring sauce to cooking vegetables",
+      "expect": [
+        {
+          "video": "msrvtt video9639"
+        }
+      ]
+    },
+    {
+      "id": "video9685",
+      "q": "people practising marshal arts",
+      "expect": [
+        {
+          "video": "msrvtt video9685"
+        }
+      ]
+    },
+    {
+      "id": "video9695",
+      "q": "text explains about a pokemon expisode that caused seizures",
+      "expect": [
+        {
+          "video": "msrvtt video9695"
+        }
+      ]
+    },
+    {
+      "id": "video9744",
+      "q": "this is a live tv show",
+      "expect": [
+        {
+          "video": "msrvtt video9744"
+        }
+      ]
+    },
+    {
+      "id": "video9775",
+      "q": "a man speaks to children in a classroom",
+      "expect": [
+        {
+          "video": "msrvtt video9775"
+        }
+      ]
+    },
+    {
+      "id": "video9790",
+      "q": "squidward scenes playing with a lil wayne song",
+      "expect": [
+        {
+          "video": "msrvtt video9790"
+        }
+      ]
+    },
+    {
+      "id": "video9804",
+      "q": "a display of clips of the movie there will be blood",
+      "expect": [
+        {
+          "video": "msrvtt video9804"
+        }
+      ]
+    },
+    {
+      "id": "video9814",
+      "q": "a scene from spongebob squarepants where the townspeople are carrying torches and chasing a giant squidward",
+      "expect": [
+        {
+          "video": "msrvtt video9814"
+        }
+      ]
+    },
+    {
+      "id": "video9824",
+      "q": "two ladies sitting down and talking in an office room",
+      "expect": [
+        {
+          "video": "msrvtt video9824"
+        }
+      ]
+    },
+    {
+      "id": "video9834",
+      "q": "old black and white films are shown and the history of motion pictures is being dealt with",
+      "expect": [
+        {
+          "video": "msrvtt video9834"
+        }
+      ]
+    },
+    {
+      "id": "video9879",
+      "q": "the young performer impressed his audience",
+      "expect": [
+        {
+          "video": "msrvtt video9879"
+        }
+      ]
+    }
+  ]
+}

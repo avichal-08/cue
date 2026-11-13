@@ -58,6 +58,33 @@ export function client(base: string) {
       rerank: boolean;
       modalities?: string[];
     }) => call<SearchResult>('/search', { method: 'POST', body: JSON.stringify(body) }),
+    upload: async (file: {
+      filename: string;
+      title: string;
+      contentType: string;
+      body: Buffer;
+    }) => {
+      const { videoId, uploadUrl } = await call<{ videoId: string; uploadUrl: string }>(
+        '/videos/uploads',
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            filename: file.filename,
+            title: file.title,
+            contentType: file.contentType,
+          }),
+        },
+      );
+      const put = await fetch(uploadUrl, {
+        method: 'PUT',
+        headers: { 'content-type': file.contentType },
+        body: new Uint8Array(file.body),
+      });
+      if (!put.ok) throw new Error(`upload of ${file.filename} failed: ${put.status}`);
+      return call<{ videoId: string; duplicate: boolean }>(`/videos/${videoId}/complete`, {
+        method: 'POST',
+      });
+    },
     ingestStats: () => call<{ videos: IngestVideo[] }>('/stats/ingest'),
     usage: (window: { since: string; until?: string; source?: string }) => {
       const params = new URLSearchParams(

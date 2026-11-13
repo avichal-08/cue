@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "eval": "tsx src/cli.ts",
+    "msrvtt": "tsx src/msrvtt.ts",
     "typecheck": "tsc",
     "lint": "eslint .",
     "test": "vitest run"

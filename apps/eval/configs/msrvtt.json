@@ -1,0 +1,13 @@
+{
+  "name": "msrvtt",
+  "description": "MSR-VTT 1k-A text-to-video retrieval on an evenly spaced subset of the test split. Ranked by video, with the demo library as extra distractors.",
+  "dataset": "../datasets/msrvtt-1k-a-100.json",
+  "search": { "limit": 30, "keyframes": false },
+  "rankBy": "video",
+  "k": [1, 5, 10],
+  "variants": [
+    { "name": "fused", "search": { "rerank": false } },
+    { "name": "+ rerank", "search": { "rerank": true } },
+    { "name": "+ keyframes in the rerank", "search": { "rerank": true, "keyframes": true } }
+  ]
+}
