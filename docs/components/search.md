@@ -18,7 +18,7 @@ POST /search { q, videoId?, fromMs?, toMs?, limit, keyframes }
   3 retrieve   3 vector searches + keyword search, one round trip      retrieve.ts
   4 fuse       similarity floors, then weighted RRF                    fuse.ts
   5 rerank     Gemini Flash scores the top 20 with reasons             rerank.ts
-  6 clips      merge adjacent hits, snap edges to words, pad           clips.ts, snap.ts
+  6 clips      grow from best hit, snap edges to words, pad            clips.ts, snap.ts
   7 respond    clips + explanations + timings                          search.ts
 ```
 
@@ -82,10 +82,20 @@ order is kept and the response says so. Details: [rerank](rerank.md).
 
 ## 6. Clips
 
-**Merge.** Hits are grouped by video and sorted by time. A hit joins the current clip when it
-starts within 1 s of the clip's end and the merged clip stays at most 90 s long. A clip ranks by
-its best hit, so merging never pushes a strong hit down. Clips are ordered by that rank and cut
-to `limit`.
+**Merge.** Each clip is grown outward from a seed. Hits are taken in rank order, and the best
+unused one starts a clip. A neighbour from the same video joins only if all three hold:
+
+- its start or end is within 1 s of the clip's edge;
+- the clip stays at most 90 s long;
+- its relevance is at least 0.9 of the seed's.
+
+Relevance is the rerank score, or the fused score when the rerank didn't run. A weaker
+neighbour is left out and can start a clip of its own, so a single relevant segment can't
+pull a whole stretch of talk in with it. A clip ranks by its seed, and clips are cut to `limit`.
+
+On the `local-moments` eval, this took `hit@1 ±5s` from 57% to 81% and `mIoU@1` from 0.46 to
+0.55. Average clip length fell from 28 s to 12 s. Before, any retrieved neighbour joined, so a
+screen recording with three long segments came back as one 72 s clip for every question about it.
 
 **Snap.** Using `transcript_words` within 5 s of each clip, in one batched query:
 
@@ -195,6 +205,7 @@ Measured on Neon and the Gemini free tier with three short test videos:
 | `minRerankScore` | `rerank.ts`   | 0.3                          |
 | `mergeGapMs`     | `clips.ts`    | 1000                         |
 | `maxClipMs`      | `clips.ts`    | 90000                        |
+| `mergeRatio`     | `clips.ts`    | 0.9 of the seed's relevance  |
 | `padMs`          | `snap.ts`     | 400                          |
 
 All of these come from a handful of synthetic test videos. The M3 evals will tune them.

@@ -59,8 +59,8 @@ query ──► filters + one cached query vector ──► 3 vector searches + 
   reciprocal rank fusion (see [0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md)).
 - **Rerank.** Gemini Flash scores the top fused hits with a short reason, optionally looking at
   keyframes, and falls back to the fused order on failure.
-- **Clips.** Adjacent hits from one video merge into a clip whose edges are moved to word
-  boundaries and padded into silence.
+- **Clips.** Each clip grows from its best hit, taking in adjacent hits that are nearly as
+  relevant. Its edges are then moved to word boundaries and padded into silence.
 - **Answers.** A separate request writes a short answer from the top clips, citing each claim
   as `[n]`; citations play their clip.
 
