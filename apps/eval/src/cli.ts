@@ -5,7 +5,7 @@ import { client } from './api';
 import { loadConfig } from './config';
 import { loadDataset } from './dataset';
 import { firstCorrectRank, metricsFor, summarize } from './metrics';
-import { gitCommit, writeReport } from './report';
+import { gitCommit, summaryMarkdown, writeReport, type VariantResult } from './report';
 import { resolveTargets, runQueries } from './runner';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -34,15 +34,24 @@ async function main() {
 
   console.log(`${config.name}: ${queries.length} queries from ${dataset.name}`);
   const startedAt = new Date().toISOString();
-  const runs = await runQueries(api, config, queries, (run, done) => {
-    const rank = run.error ? `error: ${run.error}` : `rank ${firstCorrectRank(run) ?? 'miss'}`;
-    const latency = run.latencyMs === null ? '' : ` ${run.latencyMs}ms`;
-    console.log(`[${done}/${queries.length}] ${run.id} ${rank}${latency}`);
-  });
+  const metrics = metricsFor(config);
+  const variants: VariantResult[] = [];
 
-  const summary = summarize(runs, metricsFor(config));
-  const { path: _path, datasetPath: _datasetPath, ...settings } = config;
-  const out = await writeReport(resolve(root, 'results'), {
+  for (const variant of config.variants) {
+    if (config.variants.length > 1)
+      console.log(`
+== ${variant.name}`);
+    const runs = await runQueries(api, variant, config, queries, (run, done) => {
+      const rank = run.error ? `error: ${run.error}` : `rank ${firstCorrectRank(run) ?? 'miss'}`;
+      const latency = run.latencyMs === null ? '' : ` ${run.latencyMs}ms`;
+      const retried = run.attempts > 1 ? ` (${run.attempts} tries)` : '';
+      console.log(`[${done}/${queries.length}] ${run.id} ${rank}${latency}${retried}`);
+    });
+    variants.push({ ...variant, summary: summarize(runs, metrics), runs });
+  }
+
+  const { path: _path, datasetPath: _datasetPath, variants: _variants, ...settings } = config;
+  const report = {
     name: config.name,
     description: config.description,
     dataset: dataset.name,
@@ -50,13 +59,15 @@ async function main() {
     finishedAt: new Date().toISOString(),
     commit: gitCommit(),
     config: settings,
-    summary,
-    runs,
-  });
+    variants,
+  };
+  const out = await writeReport(resolve(root, 'results'), report);
 
-  console.log(`\n${out.markdown.split('\n\n| id')[0]}\n`);
-  console.log(`wrote ${out.json}\nwrote ${out.md}`);
-  if (summary.errors === summary.queries) process.exitCode = 1;
+  console.log(`
+${summaryMarkdown(report)}`);
+  console.log(`wrote ${out.json}
+wrote ${out.md}`);
+  if (variants.every((v) => v.summary.errors === v.summary.queries)) process.exitCode = 1;
 }
 
 main().catch((err: unknown) => {

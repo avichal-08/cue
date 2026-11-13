@@ -1,5 +1,5 @@
 import type { Client, SearchHit, VideoSummary } from './api';
-import type { EvalConfig } from './config';
+import type { Variant } from './config';
 import type { Dataset } from './dataset';
 
 export interface ResolvedTarget {
@@ -15,6 +15,8 @@ export interface QueryRun {
   expect: ResolvedTarget[];
   hits: SearchHit[];
   reranked: boolean;
+  rerankWanted: boolean;
+  attempts: number;
   latencyMs: number | null;
   error?: string;
 }
@@ -58,32 +60,55 @@ async function pool<T, R>(items: T[], limit: number, fn: (item: T, i: number) =>
   return out;
 }
 
+const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
+
+export interface RunOptions {
+  concurrency: number;
+  retries: number;
+  retryDelayMs: number;
+}
+
 export async function runQueries(
   api: Client,
-  config: EvalConfig,
+  variant: Variant,
+  options: RunOptions,
   queries: ReturnType<typeof resolveTargets>['queries'],
   onDone: (run: QueryRun, done: number) => void,
 ): Promise<QueryRun[]> {
+  const { rerank: rerankWanted, ...search } = variant.search;
   let done = 0;
-  return pool(queries, config.concurrency, async (query) => {
-    const base = { id: query.id, q: query.q, expect: query.expect };
-    let run: QueryRun;
-    try {
-      const result = await api.search({ q: query.q, ...config.search });
-      run = {
-        ...base,
-        hits: result.clips.map(({ videoId, title, startMs, endMs, score }) => ({
-          videoId,
-          title,
-          startMs,
-          endMs,
-          score,
-        })),
-        reranked: result.meta.reranked,
-        latencyMs: result.meta.timings.totalMs,
-      };
-    } catch (err) {
-      run = { ...base, hits: [], reranked: false, latencyMs: null, error: (err as Error).message };
+  return pool(queries, options.concurrency, async (query) => {
+    const base = { id: query.id, q: query.q, expect: query.expect, rerankWanted };
+    let run!: QueryRun;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        const result = await api.search({ q: query.q, ...search, rerank: rerankWanted });
+        run = {
+          ...base,
+          hits: result.clips.map(({ videoId, title, startMs, endMs, score }) => ({
+            videoId,
+            title,
+            startMs,
+            endMs,
+            score,
+          })),
+          reranked: result.meta.reranked,
+          attempts: attempt,
+          latencyMs: result.meta.timings.totalMs,
+        };
+      } catch (err) {
+        run = {
+          ...base,
+          hits: [],
+          reranked: false,
+          attempts: attempt,
+          latencyMs: null,
+          error: (err as Error).message,
+        };
+      }
+      const retry = run.error || (rerankWanted && !run.reranked);
+      if (!retry || attempt > options.retries) break;
+      await sleep(options.retryDelayMs);
     }
     onDone(run, ++done);
     return run;

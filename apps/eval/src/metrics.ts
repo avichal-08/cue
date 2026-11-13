@@ -147,7 +147,7 @@ export function summarize(runs: QueryRun[], metrics: Metric[]): Summary {
   return {
     queries: runs.length,
     errors: runs.filter((r) => r.error).length,
-    unreranked: runs.filter((r) => !r.error && !r.reranked).length,
+    unreranked: runs.filter((r) => !r.error && r.rerankWanted && !r.reranked).length,
     metrics: scores,
     latencyMs: {
       p50: percentile(latencies, 50),

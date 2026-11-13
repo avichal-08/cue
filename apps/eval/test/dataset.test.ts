@@ -48,12 +48,41 @@ describe('parseConfig', () => {
       { name: 'smoke', dataset: '../datasets/a.json' },
       '/evals/configs/smoke.json',
     );
-    expect(c.search).toEqual({ limit: 10, keyframes: false });
+    expect(c.variants).toEqual([
+      { name: 'default', search: { limit: 10, keyframes: false, rerank: true } },
+    ]);
     expect(c.k).toEqual([1, 5, 10]);
+    expect(c.retries).toBe(2);
     expect(c.datasetPath.replace(/\\/g, '/')).toMatch(/\/evals\/datasets\/a\.json$/);
   });
 
-  it('rejects names that would make bad paths', () => {
+  it('layers variant search options over the shared ones', () => {
+    const c = parseConfig(
+      {
+        name: 'ablation',
+        dataset: 'a.json',
+        search: { limit: 5, rerank: false },
+        variants: [
+          { name: 'transcript', search: { modalities: ['transcript'] } },
+          { name: 'full', search: { rerank: true, keyframes: true } },
+        ],
+      },
+      'c.json',
+    );
+    expect(c.variants).toEqual([
+      {
+        name: 'transcript',
+        search: { limit: 5, keyframes: false, rerank: false, modalities: ['transcript'] },
+      },
+      { name: 'full', search: { limit: 5, keyframes: true, rerank: true } },
+    ]);
+  });
+
+  it('rejects bad names, unknown signals and duplicate variants', () => {
     expect(() => parseConfig({ name: 'Smoke Run', dataset: 'a.json' }, 'c.json')).toThrow();
+    const variants = (v: unknown[]) => () =>
+      parseConfig({ name: 'x', dataset: 'a.json', variants: v }, 'c.json');
+    expect(variants([{ name: 'a', search: { modalities: ['audio'] } }])).toThrow();
+    expect(variants([{ name: 'a' }, { name: 'a' }])).toThrow();
   });
 });

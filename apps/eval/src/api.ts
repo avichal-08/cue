@@ -40,8 +40,13 @@ export function client(base: string) {
         if (page.videos.length < 100) return out;
       }
     },
-    search: (body: { q: string; limit: number; keyframes: boolean }) =>
-      call<SearchResult>('/search', { method: 'POST', body: JSON.stringify(body) }),
+    search: (body: {
+      q: string;
+      limit: number;
+      keyframes: boolean;
+      rerank: boolean;
+      modalities?: string[];
+    }) => call<SearchResult>('/search', { method: 'POST', body: JSON.stringify(body) }),
   };
 }
 

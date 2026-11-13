@@ -25,7 +25,17 @@ const run = (
   hits: ReturnType<typeof hit>[],
   expect: ResolvedTarget[] = [{ videoId: 'v2', title: 'v2' }],
   extra: Partial<QueryRun> = {},
-): QueryRun => ({ id: 'q', q: 'q', expect, hits, reranked: true, latencyMs: 100, ...extra });
+): QueryRun => ({
+  id: 'q',
+  q: 'q',
+  expect,
+  hits,
+  reranked: true,
+  rerankWanted: true,
+  attempts: 1,
+  latencyMs: 100,
+  ...extra,
+});
 
 const span = (startMs: number, endMs: number, videoId = 'v2'): ResolvedTarget => ({
   videoId,
@@ -108,6 +118,11 @@ describe('summarize', () => {
     expect(s.errors).toBe(1);
     expect(s.unreranked).toBe(1);
     expect(s.latencyMs).toEqual({ p50: 100, p95: 300, mean: 200 });
+  });
+
+  it('does not count a variant with rerank off as unreranked', () => {
+    const runs = [run([hit('v2')], undefined, { reranked: false, rerankWanted: false })];
+    expect(summarize(runs, [mrr]).unreranked).toBe(0);
   });
 
   it('averages timestamp metrics only over labelled queries', () => {
