@@ -86,10 +86,13 @@ export class ProviderError extends Error {
     readonly retryAfterMs?: number,
   ) {
     super(`${provider} ${status}: ${message}`);
+    this.daily = status === 429 && /per ?day/i.test(message);
   }
 
+  readonly daily: boolean;
+
   get retryable() {
-    return this.status === 429 || this.status >= 500;
+    return (this.status === 429 && !this.daily) || this.status >= 500;
   }
 }
 

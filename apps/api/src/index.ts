@@ -1,5 +1,5 @@
 import express from 'express';
-import { env } from '@cue/core';
+import { env, limiter, parseRateLimits } from '@cue/core';
 import { recordProviderCalls } from '@cue/db';
 import { cors } from './cors';
 import { errorHandler } from './errors';
@@ -13,6 +13,7 @@ import { videos } from './routes/videos';
 import { timing } from './timing';
 
 recordProviderCalls('api');
+limiter.configure({ limits: parseRateLimits(env().PROVIDER_RPM), maxWaitMs: 2_000 });
 
 const app = express();
 app.use(timing);

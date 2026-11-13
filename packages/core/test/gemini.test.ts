@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { limiter } from '../src/limits';
 import { formatText, geminiEmbedder, imageMime } from '../src/gemini';
 import { ProviderError } from '../src/providers';
 
@@ -26,6 +27,8 @@ function fakeGemini(dims = 4, fail?: Response) {
   };
   return { sent, impl };
 }
+
+afterEach(() => limiter.reset());
 
 describe('formatText', () => {
   it('uses the search prefixes gemini-embedding-2 expects', () => {

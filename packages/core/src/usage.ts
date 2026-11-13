@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { limiter } from './limits';
 import { ProviderError } from './providers';
 
 export type Operation = 'transcribe' | 'embed-text' | 'embed-image' | 'ocr' | 'rerank' | 'answer';
@@ -57,6 +58,7 @@ export async function metered<T>(
   run: () => Promise<{ value: T; usage?: Usage }>,
 ): Promise<T> {
   const { request, ...meta } = call;
+  await limiter.acquire(meta.provider, meta.model);
   const started = performance.now();
   const ms = () => Math.round(performance.now() - started);
   try {
@@ -64,6 +66,7 @@ export async function metered<T>(
     emit({ ...meta, ...request, ...usage, ms: ms(), ok: true });
     return value;
   } catch (err) {
+    limiter.penalize(meta.provider, meta.model, err);
     const status = err instanceof ProviderError ? err.status : undefined;
     emit({ ...meta, ...request, ms: ms(), ok: false, ...(status ? { status } : {}) });
     throw err;

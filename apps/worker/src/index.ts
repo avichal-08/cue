@@ -1,5 +1,14 @@
 import { Queue, Worker } from 'bullmq';
-import { defaultJobOptions, env, queueName, stages, type Stage, type StageJob } from '@cue/core';
+import {
+  defaultJobOptions,
+  env,
+  limiter,
+  parseRateLimits,
+  queueName,
+  stages,
+  type Stage,
+  type StageJob,
+} from '@cue/core';
 import { recordProviderCalls } from '@cue/db';
 import { handlers } from './handlers';
 import { redis } from './progress';
@@ -7,6 +16,7 @@ import { runStage } from './runner';
 
 const connection = { url: env().REDIS_URL };
 const usage = recordProviderCalls('worker');
+limiter.configure({ limits: parseRateLimits(env().PROVIDER_RPM) });
 
 const queues = Object.fromEntries(
   stages.map((s) => [s, new Queue<StageJob>(queueName(s), { connection, defaultJobOptions })]),

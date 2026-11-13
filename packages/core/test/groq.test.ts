@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { limiter } from '../src/limits';
 import { groqSpeechToText, toTranscript } from '../src/groq';
 import { ProviderError } from '../src/providers';
 
@@ -21,6 +22,8 @@ function fakeFetch(response: Response) {
   };
   return { calls, impl };
 }
+
+afterEach(() => limiter.reset());
 
 describe('toTranscript', () => {
   it('converts seconds to ms, trims words and drops empty ones', () => {

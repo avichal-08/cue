@@ -24,6 +24,7 @@ const schema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GEMINI_EMBED_MODEL: z.string().default('gemini-embedding-2'),
   GEMINI_FLASH_MODEL: z.string().default('gemini-3.5-flash-lite'),
+  PROVIDER_RPM: z.string().optional(),
 });
 
 export type Env = z.infer<typeof schema>;

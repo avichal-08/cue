@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
+import { limiter } from '../src/limits';
 import { geminiOcr, ocrPrompt, parseOcrReply } from '../src/gemini';
 import { ProviderError } from '../src/providers';
 
@@ -16,6 +17,8 @@ function fakeFetch(response: Response) {
   };
   return { sent, impl };
 }
+
+afterEach(() => limiter.reset());
 
 describe('parseOcrReply', () => {
   it('returns trimmed, non-empty text blocks', () => {
