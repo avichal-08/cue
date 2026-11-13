@@ -12,12 +12,14 @@ On 37 hand-labelled moments in a 6-video library of short talks, explainers and 
 | signals                           | right video | starts within 5 s | clip IoU ≥ 0.3 | p50 search | cost / 1k searches |
 | --------------------------------- | ----------- | ----------------- | -------------- | ---------- | ------------------ |
 | transcript only                   | 94.6%       | 40.5%             | 62.2%          | 0.7 s      | $0                 |
-| + frames, on-screen text, keyword | 100%        | 78.4%             | 70.3%          | 0.8 s      | $0                 |
-| **+ rerank** (default)            | **100%**    | **83.8%**         | **91.9%**      | 3.1 s      | $1.41              |
+| + frames, on-screen text, keyword | 100%        | 78.4%             | 62.2%          | 0.6 s      | $0                 |
+| **+ rerank** (default)            | **100%**    | **91.9%**         | **94.6%**      | 3.3 s      | $1.41              |
 
 Indexing takes **87 min per hour of video** and costs **$0.42 per hour** at paid-tier prices, mostly OCR. Everything here runs on free tiers.
 
-The set is small and built on the demo library, so read it as evidence of what each part adds rather than a benchmark score; a public benchmark (MSR-VTT) is next. [docs/results.md](docs/results.md) has every table, including each signal on its own, latency by phase and cost by operation. [docs/evals.md](docs/evals.md) covers how to rerun them.
+The set is small and built on the demo library, so read it as evidence of what each part adds rather than a benchmark score.
+
+On **MSR-VTT** (100 clips from the 1k-A test split, mostly visual), fused search finds the right clip first **55%** of the time and in the top 10 **86%** of the time. The text-only rerank drops that to 39%, because it can't see frames; fixing that is next. [docs/results.md](docs/results.md) has every table, including each signal on its own, latency by phase and cost by operation. [docs/evals.md](docs/evals.md) covers how to rerun them.
 
 ![cue high level design](docs/diagrams/architecture.png)
 
@@ -100,7 +102,7 @@ Ingest and search work end to end:
 - **Search**: hybrid retrieval, rerank with reasons, clips snapped to word boundaries, grounded
   answers with clickable citations.
 
-- **Evals**: a labelled timestamp set, signal ablations, per-call cost tracking, and ingest and
-  search speed. Results are above.
+- **Evals**: a labelled timestamp set, signal ablations, an MSR-VTT subset, per-call cost
+  tracking, and ingest and search speed. Results are above.
 
-Next: a public benchmark (MSR-VTT), faster OCR, then hardening and a shorts generator.
+Next: a rerank that doesn't penalise visual matches, faster OCR, then hardening and a shorts generator.

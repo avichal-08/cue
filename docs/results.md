@@ -1,6 +1,6 @@
 # Results
 
-These numbers come from the eval harness ([evals.md](evals.md)) and were measured on 2026-11-13 at commit `d38d73f`. Each section gives the command that reproduces it.
+These numbers come from the eval harness ([evals.md](evals.md)) and were measured on 2026-11-13, after the visual similarity floor was lowered to 0.55 ([decision 0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md#update-2026-11-13-visual-floor-lowered-to-055)). Each section gives the command that reproduces it.
 
 **The library** has 6 short videos, 16 minutes in total:
 
@@ -11,25 +11,27 @@ These numbers come from the eval harness ([evals.md](evals.md)) and were measure
 
 **The query set** is 37 hand-labelled moments spread over the first 5 videos. The Python video only serves as a distractor. Each moment's span is labelled from the word timings and from when on-screen text appears, not from cue's own segments.
 
-This is a small set built on the demo library. Read it as evidence of how each part behaves, not as a benchmark score. The public benchmark, MSR-VTT, is still to come.
+This is a small set built on the demo library. Read it as evidence of how each part behaves, not as a benchmark score. [MSR-VTT](#msr-vtt) is the public benchmark.
 
 ## Search quality
 
 `pnpm eval ablation` adds one signal at a time. Top-1 results:
 
-| signals                   | recall@1 | hit@1 ±5s | R@1 IoU≥0.3 | R@1 IoU≥0.5 | mIoU@1 | p50   | cost / 1k searches |
-| ------------------------- | -------- | --------- | ----------- | ----------- | ------ | ----- | ------------------ |
-| transcript                | 94.6%    | 40.5%     | 62.2%       | 13.5%       | 0.346  | 0.7 s | $0                 |
-| + frames                  | 100%     | 48.6%     | 64.9%       | 27.0%       | 0.417  | 0.7 s | $0                 |
-| + on-screen text          | 100%     | 62.2%     | 64.9%       | 37.8%       | 0.413  | 0.8 s | $0                 |
-| + keyword                 | 100%     | 78.4%     | 70.3%       | 43.2%       | 0.459  | 0.8 s | $0                 |
-| **+ rerank** (default)    | 100%     | **83.8%** | **91.9%**   | 59.5%       | 0.585  | 3.1 s | $1.41              |
-| + keyframes in the rerank | 100%     | 81.1%     | 83.8%       | 64.9%       | 0.575  | 4.7 s | $5.27              |
+| signals                    | recall@1 | hit@1 ±5s | R@1 IoU≥0.3 | R@1 IoU≥0.5 | mIoU@1 | p50   | cost / 1k searches |
+| -------------------------- | -------- | --------- | ----------- | ----------- | ------ | ----- | ------------------ |
+| transcript                 | 94.6%    | 40.5%     | 62.2%       | 13.5%       | 0.346  | 0.7 s | $0                 |
+| + frames                   | 100%     | 37.8%     | 48.6%       | 24.3%       | 0.331  | 0.6 s | $0                 |
+| + on-screen text           | 100%     | 62.2%     | 59.5%       | 37.8%       | 0.395  | 0.6 s | $0                 |
+| + keyword                  | 100%     | 78.4%     | 62.2%       | 40.5%       | 0.437  | 0.6 s | $0                 |
+| **+ rerank** (default)     | 100%     | **91.9%** | **94.6%**   | 62.2%       | 0.615  | 3.3 s | $1.41              |
+| + keyframes in the rerank¹ | 100%     | 81.1%     | 83.8%       | 64.9%       | 0.575  | 4.7 s | $5.27              |
+
+¹ Measured at the old 0.65 visual floor. The free-tier rerank quota ran out before it could be rerun.
 
 - **What the metrics mean.** `recall@1` asks whether the top clip is from the right video. `hit@1 ±5s` asks whether it starts playing within 5 s of the labelled moment, which is what a person clicking a result feels. The IoU columns ask whether the clip is also the right length.
-- **Every signal adds something.** Together they double `hit@1` compared with transcript alone. Frames fix the two moments that only appear on screen ("C code calling malloc", a speaker's name card), because the slides themselves get embedded. Keyword search gives the second-biggest jump, on exact terms such as "covariance matrix" and "go build".
-- **The rerank buys clip quality.** R@1 IoU≥0.3 goes from 70% to 92%, for about 2.3 s per search.
-- **Keyframes in the rerank aren't worth turning on.** They're even with text-only rerank, at 3.7× the cost and with a much longer tail (p95 15 s). That's why they're off by default.
+- **Every signal adds something.** Together they nearly double `hit@1` compared with transcript alone. On their own, frames cost a little here: this library is mostly talk and slides, so the extra frame matches mostly stretch clips. They still fix the two moments that only appear on screen ("C code calling malloc", a speaker's name card), because the slides themselves get embedded. Keyword search gives the second-biggest jump, on exact terms such as "covariance matrix" and "go build".
+- **The rerank buys clip quality.** R@1 IoU≥0.3 goes from 62% to 95%, for about 2.7 s per search.
+- **Keyframes in the rerank aren't worth turning on.** At the old floor they were even with text-only rerank, at 3.7× the cost and with a much longer tail (p95 15 s). That's why they're off by default.
 - **Noise.** The four signal steps without rerank are deterministic. The rerank isn't, and its rows moved by a query or two between runs; on 37 queries, one query is 2.7 points.
 
 **Clip assembly.** Growing each clip from its best segment, and merging only neighbours that score at least 0.9 of it, raised `hit@1 ±5s` from 57% to 81% on the 5-video set. Average clip length fell from 28 s to 12 s ([search: clips](components/search.md#6-clips)).
@@ -60,3 +62,20 @@ The rerank is most of a search's time and all of its cost.
 - **Where these come from.** Index time is measured on all 6 videos. Cost comes only from the Python video, the one indexed after call tracking was added. For it, every call was metered: 1 transcription, 24 OCR reads, 24 keyframe embeddings and 46 text embeddings.
 - **Checking the meter.** Speech came to exactly $0.040 per hour, Groq's listed price.
 - **What's slow.** OCR is both the main cost and the main time sink: frames are read one at a time, about 2.5 s each. For videos ingested from a link, decode includes the download.
+
+## MSR-VTT
+
+`pnpm eval:msrvtt 100 && pnpm eval msrvtt` runs text-to-video retrieval on 100 clips, evenly spaced through the standard 1k-A test split. Each caption is a query, and the clip it describes is the only right answer. Results are ranked by video, with the 6 demo videos left in as extra distractors.
+
+| variant                 | recall@1 | recall@5 | recall@10 | mrr   | p50   |
+| ----------------------- | -------- | -------- | --------- | ----- | ----- |
+| frames only             | 59%      | 82%      | 88%       | 0.697 | 0.5 s |
+| all signals, fused      | **55%**  | **82%**  | **86%**   | 0.671 | 0.6 s |
+| + text rerank (default) | 39%      | 57%      | 59%       | 0.467 | 3.1 s |
+
+- **A 100-clip gallery is 10× easier than the full 1,000.** Published 1k-A numbers aren't comparable.
+- **Frames do the work.** Most clips are cooking, sports, music or gameplay with little useful speech. Adding transcript, on-screen text and keyword search to frames costs 4 points of recall@1.
+- **The text rerank hurts here.** It reads only transcripts and on-screen text, so it can't see why a visual match is right. In 30 of the 100 queries it scored the right clip below its cutoff and dropped it, and in 11 more it pushed it down; it helped in 8. 6 reranks failed on rate limits and kept the fused order. This is the main open problem the benchmark found.
+- **Keyframes in the rerank** couldn't be measured: the free-tier Flash-Lite quota ran out after the first query.
+- **The visual floor.** Before it was lowered from 0.65 to 0.55, fused recall@1 was 35% and recall@10 only 41%, because the floor discarded two thirds of the true frame matches ([decision 0003](decisions/0003-hybrid-retrieval-with-similarity-floors.md#update-2026-11-13-visual-floor-lowered-to-055)).
+- **Ingest.** The 100 clips (about 25 minutes of video) indexed with no failures.

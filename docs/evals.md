@@ -148,3 +148,25 @@ Retried searches count toward the cost.
 - A model missing from the file is reported with `?` rather than as free.
 
 `local-smoke` only exercises the harness. `local-moments` is the timestamp set. Neither is a public benchmark.
+
+## MSR-VTT
+
+[MSR-VTT](https://huggingface.co/datasets/friedrichor/MSR-VTT) is the standard text-to-video retrieval benchmark. Its 1k-A test split pairs 1,000 clips of 10–30 seconds with one caption each. Most clips are visual: cooking, sports, music and gameplay, often with no useful speech.
+
+```bash
+pnpm eval:msrvtt 100
+pnpm eval msrvtt
+```
+
+The first command does four things:
+
+1. Picks an evenly spaced subset of the split, 100 clips by default.
+2. Writes the dataset to `apps/eval/datasets/msrvtt-1k-a-<count>.json`, with one query per caption.
+3. Reads only those clips out of the 2.2 GB archive with HTTP range requests, and caches them in `apps/eval/data/msrvtt/` (gitignored).
+4. Uploads each one through the API as `msrvtt <video id>`, and waits until ingest finishes.
+
+Rerunning it skips clips that are already in the library. For another count, point the config's `dataset` at the matching file.
+
+The `msrvtt` config sets `"rankBy": "video"`, which keeps only the first clip of each video before scoring, so `recall@k` means the right video is among the top `k` videos. It asks for 30 clips so that there are still at least 10 videos after this step.
+
+**Reading the score.** Published numbers search all 1,000 clips. A 100-clip subset is a 10× smaller haystack, so recall comes out higher than it would on the full split. The demo videos stay in the library as extra distractors.
