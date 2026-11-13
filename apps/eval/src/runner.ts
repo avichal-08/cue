@@ -1,4 +1,4 @@
-import type { Client, SearchHit, VideoSummary } from './api';
+import type { Client, SearchHit, SearchTimings, VideoSummary } from './api';
 import type { Variant } from './config';
 import type { Dataset } from './dataset';
 
@@ -18,6 +18,7 @@ export interface QueryRun {
   rerankWanted: boolean;
   attempts: number;
   latencyMs: number | null;
+  timings?: SearchTimings;
   error?: string;
 }
 
@@ -95,6 +96,7 @@ export async function runQueries(
           reranked: result.meta.reranked,
           attempts: attempt,
           latencyMs: result.meta.timings.totalMs,
+          timings: result.meta.timings,
         };
       } catch (err) {
         run = {

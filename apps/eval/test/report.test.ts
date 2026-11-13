@@ -35,10 +35,14 @@ describe('ablation report', () => {
   it('puts one row per variant with only the @1 metrics', () => {
     const lines = ablationTable(variants);
     expect(lines[0]).toBe(
-      '| variant | signals | rerank | recall@1 | mrr | mIoU@1 | p50 | not reranked |',
+      '| variant | signals | rerank | recall@1 | mrr | mIoU@1 | p50 | p95 | cost / 1k | not reranked |',
     );
-    expect(lines[2]).toBe('| transcript | transcript | off | 100.0% | 1.000 | 0.333 | 50 ms |  |');
-    expect(lines[3]).toBe('| full | all | text | 100.0% | 1.000 | 1.000 | 50 ms | 0 |');
+    expect(lines[2]).toBe(
+      '| transcript | transcript | off | 100.0% | 1.000 | 0.333 | 50 ms | 50 ms | n/a |  |',
+    );
+    expect(lines[3]).toBe(
+      '| full | all | text | 100.0% | 1.000 | 1.000 | 50 ms | 50 ms | n/a | 0 |',
+    );
   });
 
   it('adds a per-query iou matrix when there is more than one variant', () => {

@@ -1,0 +1,22 @@
+{
+  "currency": "USD",
+  "checked": "2026-11-13",
+  "charsPerToken": 4,
+  "models": {
+    "groq/whisper-large-v3-turbo": {
+      "audioHour": 0.04,
+      "minBilledSec": 10,
+      "source": "https://console.groq.com/docs/model/whisper-large-v3-turbo"
+    },
+    "gemini/gemini-embedding-2": {
+      "inputTokensM": 0.2,
+      "image": 0.00012,
+      "source": "https://aistudio.google.com/docs/pricing"
+    },
+    "gemini/gemini-3.5-flash-lite": {
+      "inputTokensM": 0.3,
+      "outputTokensM": 2.5,
+      "source": "https://aistudio.google.com/docs/pricing"
+    }
+  }
+}

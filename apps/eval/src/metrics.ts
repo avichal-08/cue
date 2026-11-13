@@ -128,7 +128,10 @@ export interface Summary {
   unreranked: number;
   metrics: Record<string, MetricResult>;
   latencyMs: { p50: number | null; p95: number | null; mean: number | null };
+  phasesMs: Record<string, { p50: number | null; p95: number | null }>;
 }
+
+const phases = ['embedMs', 'retrieveMs', 'rerankMs', 'clipsMs'] as const;
 
 export function summarize(runs: QueryRun[], metrics: Metric[]): Summary {
   const scores: Record<string, MetricResult> = {};
@@ -156,5 +159,14 @@ export function summarize(runs: QueryRun[], metrics: Metric[]): Summary {
         ? Math.round(latencies.reduce((a, b) => a + b, 0) / latencies.length)
         : null,
     },
+    phasesMs: Object.fromEntries(
+      phases.map((phase) => {
+        const values = runs.flatMap((r) => (r.timings ? [r.timings[phase]] : []));
+        return [
+          phase.replace(/Ms$/, ''),
+          { p50: percentile(values, 50), p95: percentile(values, 95) },
+        ];
+      }),
+    ),
   };
 }

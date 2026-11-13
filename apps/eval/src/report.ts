@@ -5,10 +5,21 @@ import type { EvalConfig, SearchOptions } from './config';
 import { bestIou, firstCorrectRank, spans, type MetricResult, type Summary } from './metrics';
 import type { QueryRun } from './runner';
 
+export interface SearchCost {
+  searches: number;
+  calls: number;
+  rerankCalls: number;
+  cost: number;
+  per1k: number;
+  estimated: boolean;
+  unpriced: string[];
+}
+
 export interface VariantResult {
   name: string;
   search: SearchOptions;
   summary: Summary;
+  cost?: SearchCost;
   runs: QueryRun[];
 }
 
@@ -19,7 +30,8 @@ export interface Report {
   startedAt: string;
   finishedAt: string;
   commit: string | null;
-  config: Omit<EvalConfig, 'path' | 'datasetPath' | 'variants'>;
+  config: Omit<EvalConfig, 'path' | 'datasetPath' | 'pricesPath' | 'variants'>;
+  prices?: { currency: string; checked: string };
   variants: VariantResult[];
 }
 
@@ -40,25 +52,34 @@ const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\s+/g, ' ');
 const row = (cells: (string | number)[]) => `| ${cells.join(' | ')} |`;
 
 const signals = (s: SearchOptions) => (s.modalities ? s.modalities.join(' + ') : 'all');
+const per1k = (c: SearchCost | undefined) =>
+  c ? `$${c.per1k.toFixed(3)}${c.estimated ? '~' : ''}${c.unpriced.length ? '?' : ''}` : 'n/a';
 
 function header(report: Report) {
   const queries = report.variants[0]?.summary.queries ?? 0;
+  const prices = report.prices
+    ? ` · prices in ${report.prices.currency} checked ${report.prices.checked}`
+    : '';
   return [
     `# ${report.name}`,
     '',
     ...(report.description ? [report.description, ''] : []),
-    `dataset \`${report.dataset}\` · ${queries} queries · commit \`${report.commit ?? 'unknown'}\` · ${report.finishedAt}`,
+    `dataset \`${report.dataset}\` · ${queries} searches · commit \`${report.commit ?? 'unknown'}\` · ${report.finishedAt}${prices}`,
     '',
   ];
 }
 
-function summaryTable({ summary }: VariantResult) {
+function summaryTable({ summary, cost }: VariantResult) {
   return [
     '| metric | value | queries |',
     '| --- | --- | --- |',
     ...Object.entries(summary.metrics).map(([name, m]) => row([name, value(m), m.n])),
     row(['latency p50', ms(summary.latencyMs.p50), '']),
     row(['latency p95', ms(summary.latencyMs.p95), '']),
+    ...Object.entries(summary.phasesMs).map(([phase, p]) =>
+      row([`↳ ${phase} p50 / p95`, `${ms(p.p50)} / ${ms(p.p95)}`, '']),
+    ),
+    row(['cost per 1k searches', per1k(cost), cost ? cost.searches : '']),
     row(['errors', summary.errors, '']),
     row(['not reranked', summary.unreranked, '']),
     '',
@@ -88,8 +109,8 @@ const atOne = (name: string) => name === 'mrr' || /@1( |$)/.test(name);
 export function ablationTable(variants: VariantResult[]) {
   const names = Object.keys(variants[0]?.summary.metrics ?? {}).filter(atOne);
   return [
-    row(['variant', 'signals', 'rerank', ...names, 'p50', 'not reranked']),
-    row(Array.from({ length: names.length + 5 }, () => '---')),
+    row(['variant', 'signals', 'rerank', ...names, 'p50', 'p95', 'cost / 1k', 'not reranked']),
+    row(Array.from({ length: names.length + 7 }, () => '---')),
     ...variants.map((v) =>
       row([
         v.name,
@@ -100,6 +121,8 @@ export function ablationTable(variants: VariantResult[]) {
           return m ? value(m) : '';
         }),
         ms(v.summary.latencyMs.p50),
+        ms(v.summary.latencyMs.p95),
+        per1k(v.cost),
         v.search.rerank ? v.summary.unreranked : '',
       ]),
     ),

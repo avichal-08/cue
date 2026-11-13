@@ -1,0 +1,14 @@
+{
+  "name": "latency",
+  "description": "Search latency and cost over three passes of the labelled moments, with and without the rerank. Query embeddings come from the cache after the first search, as they would for repeated queries.",
+  "dataset": "../datasets/local-moments.json",
+  "variants": [
+    { "name": "fused only", "search": { "rerank": false } },
+    { "name": "with rerank", "search": { "rerank": true } }
+  ],
+  "repeat": 3,
+  "k": [1],
+  "iou": [0.5],
+  "retries": 3,
+  "retryDelayMs": 8000
+}

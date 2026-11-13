@@ -1,3 +1,6 @@
+import type { IngestVideo } from './ingest';
+import type { UsageRow } from './pricing';
+
 export interface VideoSummary {
   id: string;
   title: string;
@@ -12,9 +15,17 @@ export interface SearchHit {
   score: number | null;
 }
 
+export interface SearchTimings {
+  embedMs: number;
+  retrieveMs: number;
+  rerankMs: number;
+  clipsMs: number;
+  totalMs: number;
+}
+
 export interface SearchResult {
   clips: SearchHit[];
-  meta: { reranked: boolean; rerankError: string | null; timings: { totalMs: number } };
+  meta: { reranked: boolean; rerankError: string | null; timings: SearchTimings };
 }
 
 export function client(base: string) {
@@ -47,6 +58,15 @@ export function client(base: string) {
       rerank: boolean;
       modalities?: string[];
     }) => call<SearchResult>('/search', { method: 'POST', body: JSON.stringify(body) }),
+    ingestStats: () => call<{ videos: IngestVideo[] }>('/stats/ingest'),
+    usage: (window: { since: string; until?: string; source?: string }) => {
+      const params = new URLSearchParams(
+        Object.entries(window).filter((e): e is [string, string] => e[1] !== undefined),
+      );
+      return call<{ usage: (UsageRow & { source: string })[] }>(
+        `/stats/usage?${params.toString()}`,
+      );
+    },
   };
 }
 
