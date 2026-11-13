@@ -1,10 +1,12 @@
 import { Queue, Worker } from 'bullmq';
 import { defaultJobOptions, env, queueName, stages, type Stage, type StageJob } from '@cue/core';
+import { recordProviderCalls } from '@cue/db';
 import { handlers } from './handlers';
 import { redis } from './progress';
 import { runStage } from './runner';
 
 const connection = { url: env().REDIS_URL };
+const usage = recordProviderCalls('worker');
 
 const queues = Object.fromEntries(
   stages.map((s) => [s, new Queue<StageJob>(queueName(s), { connection, defaultJobOptions })]),
@@ -28,6 +30,7 @@ async function shutdown() {
     ...workers.map((w) => w.close()),
     ...Object.values(queues).map((q) => q.close()),
   ]);
+  await usage.stop();
   redis.disconnect();
   process.exit(0);
 }

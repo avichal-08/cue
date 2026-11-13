@@ -6,6 +6,7 @@ import {
   stages,
   type Stage,
   type StageJob,
+  withCallContext,
 } from '@cue/core';
 import { db, failRun, finishRun, getRun, setRunProgress, startRun, videos } from '@cue/db';
 import { eq } from 'drizzle-orm';
@@ -41,12 +42,14 @@ async function execute(job: Job<StageJob>, handler: Handler, inputHash: string) 
   await publish({ type: 'stage', videoId, stage, status: 'running' });
 
   try {
-    await handler(job, {
-      progress: async (progress) => {
-        await setRunProgress(videoId, stage, progress);
-        await publish({ type: 'progress', videoId, stage, progress });
-      },
-    });
+    await withCallContext({ source: 'worker', videoId, stage }, () =>
+      handler(job, {
+        progress: async (progress) => {
+          await setRunProgress(videoId, stage, progress);
+          await publish({ type: 'progress', videoId, stage, progress });
+        },
+      }),
+    );
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     const final =
