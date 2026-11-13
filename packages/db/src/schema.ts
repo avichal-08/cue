@@ -146,3 +146,27 @@ export const embeddingCache = pgTable(
   },
   (t) => [primaryKey({ columns: [t.contentHash, t.model, t.kind] })],
 );
+
+export const providerCalls = pgTable(
+  'provider_calls',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
+    source: text('source').notNull(),
+    videoId: uuid('video_id').references(() => videos.id, { onDelete: 'set null' }),
+    stage: text('stage'),
+    provider: text('provider').notNull(),
+    model: text('model').notNull(),
+    operation: text('operation').notNull(),
+    ok: boolean('ok').notNull(),
+    status: integer('status'),
+    ms: integer('ms').notNull(),
+    audioMs: integer('audio_ms'),
+    inputTokens: integer('input_tokens'),
+    outputTokens: integer('output_tokens'),
+    images: integer('images'),
+    texts: integer('texts'),
+    chars: integer('chars'),
+  },
+  (t) => [index('provider_calls_video_idx').on(t.videoId), index('provider_calls_at_idx').on(t.at)],
+);
