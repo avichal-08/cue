@@ -1,0 +1,22 @@
+{
+  "name": "ablation",
+  "description": "Add one signal at a time over the hand-labelled moments. Keyword search covers transcript and on-screen text, so it gets its own step after the vector signals.",
+  "dataset": "../datasets/local-moments.json",
+  "search": { "limit": 10, "keyframes": false, "rerank": false },
+  "variants": [
+    { "name": "transcript", "search": { "modalities": ["transcript"] } },
+    { "name": "+ frames", "search": { "modalities": ["transcript", "visual"] } },
+    { "name": "+ on-screen text", "search": { "modalities": ["transcript", "visual", "ocr"] } },
+    {
+      "name": "+ keyword",
+      "search": { "modalities": ["transcript", "visual", "ocr", "keyword"] }
+    },
+    { "name": "+ rerank", "search": { "rerank": true } },
+    { "name": "+ keyframes in rerank", "search": { "rerank": true, "keyframes": true } }
+  ],
+  "k": [1, 5, 10],
+  "windowSec": 5,
+  "iou": [0.3, 0.5],
+  "retries": 3,
+  "retryDelayMs": 8000
+}

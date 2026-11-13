@@ -33,17 +33,46 @@ The results folder is gitignored. The JSON keeps every hit for every query along
   "k": [1, 5, 10],
   "windowSec": 5,
   "iou": [0.3, 0.5],
-  "concurrency": 1
+  "concurrency": 1,
+  "retries": 2,
+  "retryDelayMs": 5000
 }
 ```
 
 - `name` and `dataset` are required.
 - `name` must be lowercase letters, digits and dashes, because it becomes a folder name.
 - `dataset` is resolved relative to the config file.
-- `search` is passed straight to `POST /search`.
+- `search` is passed to `POST /search`. It takes `limit` (10), `keyframes` (false), `rerank` (true) and `modalities` (all four signals when left out).
 - `k` sets the cutoffs for every ranked metric.
 - `windowSec` is the tolerance for `hit@k`, and `iou` sets the thresholds for `R@k`.
 - Keep `concurrency` low on free-tier keys, because each query costs a rerank call.
+- When a variant wants a rerank but the rerank fails (Gemini rate limits and 503s), the query is retried up to `retries` times, `retryDelayMs` apart. Only the misses that remain count as "not reranked".
+
+## Ablations
+
+A config can list `variants`. Each one layers its own `search` options over the shared `search`, and runs the whole dataset:
+
+```json
+{
+  "search": { "rerank": false },
+  "variants": [
+    { "name": "transcript", "search": { "modalities": ["transcript"] } },
+    { "name": "+ frames", "search": { "modalities": ["transcript", "visual"] } },
+    { "name": "+ rerank", "search": { "rerank": true } }
+  ]
+}
+```
+
+With more than one variant, the report has one row per variant with every `@1` metric and `mrr`, followed by a grid of each query's top-clip IoU per variant. The grid shows which queries each signal wins or loses. `pnpm eval ablation` runs this ladder over `local-moments`:
+
+1. transcript
+2. \+ frames
+3. \+ on-screen text
+4. \+ keyword
+5. \+ rerank
+6. \+ keyframes in the rerank
+
+Keyword search reads both the transcript and the on-screen text, so it comes after the vector signals rather than inside step 1.
 
 ## Dataset
 
