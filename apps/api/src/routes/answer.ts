@@ -1,3 +1,4 @@
+import { withCallContext } from '@cue/core';
 import { Router } from 'express';
 import { z } from 'zod';
 import { answerQuestion } from '../search/answer';
@@ -19,7 +20,7 @@ export const answer = Router();
 
 answer.post('/', async (req, res) => {
   const { q, clips } = body.parse(req.body);
-  const result = await answerQuestion(q, clips);
+  const result = await withCallContext({ source: 'answer' }, () => answerQuestion(q, clips));
   res.locals.search = {
     query: q,
     sources: clips.length,

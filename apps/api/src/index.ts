@@ -1,5 +1,6 @@
 import express from 'express';
 import { env } from '@cue/core';
+import { recordProviderCalls } from '@cue/db';
 import { cors } from './cors';
 import { errorHandler } from './errors';
 import { answer } from './routes/answer';
@@ -7,8 +8,11 @@ import { events } from './routes/events';
 import { health } from './routes/health';
 import { jobs } from './routes/jobs';
 import { search } from './routes/search';
+import { stats } from './routes/stats';
 import { videos } from './routes/videos';
 import { timing } from './timing';
+
+recordProviderCalls('api');
 
 const app = express();
 app.use(timing);
@@ -21,6 +25,7 @@ app.use('/events', events);
 app.use('/jobs', jobs);
 app.use('/search', search);
 app.use('/answer', answer);
+app.use('/stats', stats);
 app.use(errorHandler);
 
 const port = env().API_PORT;

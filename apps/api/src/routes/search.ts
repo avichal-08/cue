@@ -1,3 +1,4 @@
+import { withCallContext } from '@cue/core';
 import { Router } from 'express';
 import { z } from 'zod';
 import { modalities } from '../search/fuse';
@@ -17,7 +18,8 @@ const body = z.object({
 export const search = Router();
 
 search.post('/', async (req, res) => {
-  const result = await runSearch(body.parse(req.body));
+  const request = body.parse(req.body);
+  const result = await withCallContext({ source: 'search' }, () => runSearch(request));
   res.locals.search = {
     query: result.query,
     clips: result.clips.length,
