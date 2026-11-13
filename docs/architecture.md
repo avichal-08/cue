@@ -45,6 +45,9 @@ url ─────► video row ───────────────�
   (transcript, keyframe, OCR) with HNSW cosine indexes.
 - `transcript_words`: word timings, used to cut clips on word boundaries.
 - `frames`, `embedding_cache`, `stage_runs`.
+- `provider_calls`: one row per Groq or Gemini call, with its operation, latency, tokens, images
+  or audio seconds. Worker calls carry their video and stage. Written in batches by
+  `recordProviderCalls` and priced only by the evals.
 
 ## Search
 

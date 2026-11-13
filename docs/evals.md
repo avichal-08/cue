@@ -120,4 +120,31 @@ Keyword search reads both the transcript and the on-screen text, so it comes aft
 
 The timestamp metrics only count queries that have spans; the `queries` column in the report shows how many. A query that errors counts as a miss and is listed under errors. "Not reranked" counts the queries where the rerank call failed and the fused order was used instead, which usually means a rate limit. Rerun those before reading too much into a score.
 
+## Cost and speed
+
+Every Groq and Gemini call is metered in `@cue/core` and saved to `provider_calls`, tagged `worker` (with its video and stage), `search` or `answer`. Each row records the operation, latency and usage: audio seconds for speech, tokens in and out for Flash, and images and characters for embeddings.
+
+**Ingest.** `pnpm eval ingest` reads `GET /stats/ingest` and reports, per hour of video:
+
+- index time, overall and by stage;
+- cost at paid-tier prices, by operation;
+- the number of provider calls.
+
+It also prints a per-video table.
+
+- **Index time** runs from the first stage start to the last stage finish, so it includes queue waits. For a linked video, the `decode` stage includes the download.
+- **Cost** only counts videos indexed after tracking was added. A re-run that hits the transcript or embedding cache makes fewer calls, so a video only gives a cold cost the first time it's indexed.
+
+**Search.** `pnpm eval latency` runs the moments set 3 times, with and without the rerank. It reports:
+
+- p50 and p95 for the whole search and for each phase (embed, retrieve, rerank, clips);
+- the cost per 1,000 searches, from the `search` calls made during each variant.
+
+Retried searches count toward the cost.
+
+**Prices** live in `apps/eval/prices.json`, keyed by `provider/model`. Each entry records its source page and the date it was checked. The free tier costs nothing, so these are what the same calls would cost on a paid plan.
+
+- Gemini embeddings return no token count, so text tokens are estimated as characters / 4. A `~` after a cost marks an estimate.
+- A model missing from the file is reported with `?` rather than as free.
+
 `local-smoke` only exercises the harness. `local-moments` is the timestamp set. Neither is a public benchmark.

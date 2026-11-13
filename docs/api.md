@@ -30,6 +30,8 @@ responses are JSON. Request bodies are validated with zod.
 | GET    | `/events`              | server-sent ingest progress                  |
 | POST   | `/search`              | ranked, explained clips for a query          |
 | POST   | `/answer`              | grounded answer with citations to clips      |
+| GET    | `/stats/ingest`        | per-video stage times and provider usage     |
+| GET    | `/stats/usage`         | provider usage in a time window              |
 
 ### GET /health
 
@@ -114,3 +116,15 @@ Body: `{ q: string (1-500), clips: 1 to 8 of { videoId, startMs, endMs } }`.
 
 `200 { answer, grounded, citations: [{ n, videoId, startMs, endMs }], model, ms }`. See
 [components/answers](components/answers.md). 429, 502 and 503 as for search.
+
+### GET /stats/ingest
+
+`200 { videos: [{ id, title, status, durationMs, createdAt, stages: [{ stage, status, attempts, startedAt, finishedAt }], usage: [...] }] }`.
+
+Each `usage` row groups one video's provider calls by `provider`, `model` and `operation`. It holds `calls` and `failed`, plus the summed `ms`, `audioMs`, `inputTokens`, `outputTokens`, `images`, `texts` and `chars`. The eval cost report reads this endpoint.
+
+### GET /stats/usage
+
+Query: `since` (ISO time, required), `until` (ISO time), `source` (`worker`, `search` or `answer`).
+
+`200 { since, until, usage: [...] }`, with the same rows as above plus `source`.
