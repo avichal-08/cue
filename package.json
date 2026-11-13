@@ -21,7 +21,8 @@
     "db:migrate": "pnpm --filter @cue/db migrate",
     "db:studio": "pnpm --filter @cue/db studio",
     "eval": "pnpm --filter @cue/eval eval",
-    "eval:msrvtt": "pnpm --filter @cue/eval msrvtt"
+    "eval:msrvtt": "pnpm --filter @cue/eval msrvtt",
+    "cleanup": "pnpm --filter @cue/worker cleanup"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
