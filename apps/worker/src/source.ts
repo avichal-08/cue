@@ -33,6 +33,8 @@ async function fetchWithYtDlp(url: URL, key: (ext: string) => string) {
   try {
     const out = await run(env().YTDLP_PATH, [
       '--no-playlist',
+      '--js-runtimes',
+      'node',
       '-f',
       'b[ext=mp4]/b',
       '-o',

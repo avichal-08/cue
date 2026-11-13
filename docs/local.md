@@ -9,7 +9,7 @@ Locally, the three apps run on your machine in watch mode, while Redis and MinIO
 - **Docker,** for Redis and MinIO.
 - **A Neon database.** The free tier is enough, and migrations enable pgvector.
 - **API keys:** a [Groq](https://console.groq.com/keys) key for speech and a [Gemini](https://aistudio.google.com/apikey) key for embeddings, OCR, rerank and answers. The free tiers of both are enough.
-- **Optional:** [yt-dlp](https://github.com/yt-dlp/yt-dlp) on your path, to ingest page URLs such as YouTube.
+- **Optional:** [yt-dlp](https://github.com/yt-dlp/yt-dlp), to ingest page URLs such as YouTube. Install it with `pip install -U "yt-dlp[default]"`, which bundles the scripts YouTube now needs. The worker runs them with Node.
 
 ffmpeg and ffprobe come with `pnpm install`, so you don't install them yourself.
 
