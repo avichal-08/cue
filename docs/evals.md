@@ -7,10 +7,10 @@
 Start the stack with `pnpm infra:up && pnpm dev`. Then:
 
 ```bash
-pnpm eval smoke
+pnpm eval moments
 ```
 
-`smoke` names a file in `apps/eval/configs/`. A path to a config file also works.
+`moments` names a file in `apps/eval/configs/`. A path to a config file also works.
 
 The command prints one line per query and then a summary table. It also writes both files to:
 
@@ -25,12 +25,14 @@ The results folder is gitignored. The JSON keeps every hit for every query along
 
 ```json
 {
-  "name": "smoke",
+  "name": "moments",
   "description": "optional, printed at the top of the report",
   "api": "http://localhost:4000",
-  "dataset": "../datasets/local-smoke.json",
+  "dataset": "../datasets/local-moments.json",
   "search": { "limit": 10, "keyframes": false },
   "k": [1, 5, 10],
+  "windowSec": 5,
+  "iou": [0.3, 0.5],
   "concurrency": 1
 }
 ```
@@ -39,19 +41,20 @@ The results folder is gitignored. The JSON keeps every hit for every query along
 - `name` must be lowercase letters, digits and dashes, because it becomes a folder name.
 - `dataset` is resolved relative to the config file.
 - `search` is passed straight to `POST /search`.
-- `k` sets which `recall@k` values are reported.
+- `k` sets the cutoffs for every ranked metric.
+- `windowSec` is the tolerance for `hit@k`, and `iou` sets the thresholds for `R@k`.
 - Keep `concurrency` low on free-tier keys, because each query costs a rerank call.
 
 ## Dataset
 
 ```json
 {
-  "name": "local-smoke",
+  "name": "local-moments",
   "queries": [
     {
-      "id": "rust-creator",
-      "q": "Graydon Hoare",
-      "expect": [{ "video": "Rust in 100 Seconds", "start": "0:15", "end": "0:20" }]
+      "id": "rust-name",
+      "q": "where does the name rust come from",
+      "expect": [{ "video": "Rust in 100 Seconds", "start": "19.0", "end": "21.6" }]
     }
   ]
 }
@@ -61,16 +64,31 @@ The results folder is gitignored. The JSON keeps every hit for every query along
 - **`start` and `end`:** optional, but give both or neither. Each takes milliseconds or a clock string (`45`, `1:30`, `1:02:03.5`). Leave them out when the whole video counts as a hit.
 - **More than one target:** a query can have several, and a hit on any of them counts.
 
+## Labelling moments
+
+- **Mark the moment that answers the query,** not the segment cue happened to cut. Spans come from word timings and from when on-screen text appears.
+- **Keep spans tight,** usually 3–20 seconds, because a loose span inflates IoU.
+- **Mix the query types,** so each signal is tested:
+  - paraphrases that share no words with the transcript;
+  - exact terms;
+  - text that only appears on screen.
+- **Repeated moments:** if a moment happens twice, list both spans as targets.
+
+`local-moments` follows these rules over the 5 demo videos.
+
 ## Metrics
 
-| metric     | meaning                                                                 |
-| ---------- | ----------------------------------------------------------------------- |
-| `recall@k` | share of queries where a clip from an expected video is in the top `k`  |
-| `mrr`      | mean of `1 / rank` of the first clip from an expected video, 0 if none  |
-| latency    | p50 and p95 of the API's own `totalMs`, so network time is not included |
+| metric      | meaning                                                                                             |
+| ----------- | --------------------------------------------------------------------------------------------------- |
+| `recall@k`  | share of queries where a clip from an expected video is in the top `k`                              |
+| `mrr`       | mean of `1 / rank` of the first clip from an expected video, 0 if none                              |
+| `hit@k ±Ns` | share of queries where a top-`k` clip **starts** inside a labelled span or within `N` seconds of it |
+| `R@k iou≥t` | share of queries where a top-`k` clip overlaps a labelled span with temporal IoU of at least `t`    |
+| `mIoU@1`    | mean IoU between the top clip and its best-matching span, 0 for a wrong video                       |
+| latency     | p50 and p95 of the API's own `totalMs`, so network time is not included                             |
 
-A query that errors counts as a miss and is listed under errors. "Not reranked" counts the queries where the rerank call failed and the fused order was used instead, which usually means a rate limit.
+`hit@k` asks whether playback starts in the right place, which is what a person clicking a result feels. IoU asks whether the clip is the right length as well, so it penalises a clip that starts on time but runs far past the moment.
 
-These are video-level scores: a hit counts if it's from the right video, at any time. Timestamp scoring against the `start` / `end` spans is added in 3.3.
+The timestamp metrics only count queries that have spans; the `queries` column in the report shows how many. A query that errors counts as a miss and is listed under errors. "Not reranked" counts the queries where the rerank call failed and the fused order was used instead, which usually means a rate limit. Rerun those before reading too much into a score.
 
-`local-smoke` exercises the harness against the demo library. It's not a benchmark.
+`local-smoke` only exercises the harness. `local-moments` is the timestamp set. Neither is a public benchmark.
