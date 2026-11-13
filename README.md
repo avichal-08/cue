@@ -23,6 +23,7 @@ cite the exact moments.
 apps/web                 next.js ui
 apps/api                 express api
 apps/worker              pipeline workers
+apps/eval                eval harness
 packages/db              schema, client, migrations
 packages/core            env, queues, providers, storage
 packages/tsconfig        shared tsconfig
@@ -57,6 +58,7 @@ server, see [docs/deploy.md](docs/deploy.md).
 | `pnpm format`      | format with prettier                 |
 | `pnpm db:generate` | generate a migration from the schema |
 | `pnpm db:migrate`  | apply migrations to `DATABASE_URL`   |
+| `pnpm eval <name>` | run an eval config against the api   |
 
 ## How it works
 
@@ -69,6 +71,7 @@ Search runs filters, hybrid retrieval, rerank and clip assembly on every query.
 | [docs/api.md](docs/api.md)                   | every HTTP endpoint                 |
 | [docs/local.md](docs/local.md)               | running it on your machine          |
 | [docs/deploy.md](docs/deploy.md)             | running it on any linux vm          |
+| [docs/evals.md](docs/evals.md)               | running and reading evals           |
 | [docs/components](docs/components/README.md) | how search, rerank and answers work |
 | [docs/decisions](docs/decisions/README.md)   | why the big choices were made       |
 | [docs/RESOURCES.md](docs/RESOURCES.md)       | reading list for the build          |
