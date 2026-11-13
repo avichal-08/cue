@@ -13,7 +13,7 @@ export const rrfK = 60;
 export const minSimilarity: Partial<Record<Modality, number>> = {
   transcript: 0.65,
   ocr: 0.65,
-  visual: 0.65,
+  visual: 0.55,
 };
 
 export function aboveFloor(

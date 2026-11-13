@@ -71,3 +71,14 @@ relevant in the library ("kubernetes autoscaling") returned nothing.
   than as an error.
 - Search latency is one embedding call (or a cache hit, about 0.4 s) plus one database round
   trip, about 100 to 300 ms on Neon.
+
+## Update, 2026-11-13: visual floor lowered to 0.55
+
+MSR-VTT ([results](../results.md#msr-vtt)) showed the visual floor was far too high for real footage. Across 100 captions, the right clip's best frame scored 0.56 to 0.69 (p10 to p90), and the best wrong clip scored 0.57 to 0.65. The two ranges overlap, so a high fixed floor mostly removed true matches: at 0.65 only 33 of the 100 right clips passed, which capped fused recall@1 at 35%.
+
+| visual floor | right clips kept | MSR-VTT fused recall@1 | demo hit@1 ±5s, with rerank |
+| ------------ | ---------------- | ---------------------- | --------------------------- |
+| 0.65         | 33               | 35%                    | 83.8%                       |
+| 0.55         | 96               | 55%                    | 91.9%                       |
+
+0.50 kept all 100 but scored the same as 0.55 on both sets, so the visual floor is now 0.55. Transcript and OCR stay at 0.65, since text-to-text similarities sit higher and the demo set still supports them. The floor still does its job of keeping unrelated frames out; the ranking among frames that pass it is left to fusion and the reranker.

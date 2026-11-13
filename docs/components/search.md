@@ -67,7 +67,7 @@ One `db.batch`, which Neon runs as one transaction in one round trip:
 ## 4. Fusion
 
 1. **Floors.** Vector hits below their modality's minimum cosine similarity are dropped
-   (0.65 for transcript, OCR and visual). Keyword hits have no floor.
+   (0.65 for transcript and OCR, 0.55 for visual). Keyword hits have no floor.
 2. **Weighted reciprocal rank fusion.** Each segment scores `sum(weight / (60 + rank))` over the
    lists it survives in. Weights: transcript 1.0, keyword 1.0, OCR 0.8, visual 0.6.
 3. Every hit keeps its rank and raw score per modality; these become `matchedBy` in the
@@ -195,18 +195,18 @@ Measured on Neon and the Gemini free tier with three short test videos:
 
 ## Settings
 
-| Setting          | File          | Default                      |
-| ---------------- | ------------- | ---------------------------- |
-| `perModality`    | `retrieve.ts` | 50 rows per list             |
-| `minSimilarity`  | `fuse.ts`     | 0.65 transcript, OCR, visual |
-| `defaultWeights` | `fuse.ts`     | 1.0 / 1.0 / 0.8 / 0.6        |
-| `rrfK`           | `fuse.ts`     | 60                           |
-| `rerankTop`      | `rerank.ts`   | 20                           |
-| `minRerankScore` | `rerank.ts`   | 0.3                          |
-| `mergeGapMs`     | `clips.ts`    | 1000                         |
-| `maxClipMs`      | `clips.ts`    | 90000                        |
-| `mergeRatio`     | `clips.ts`    | 0.9 of the seed's relevance  |
-| `padMs`          | `snap.ts`     | 400                          |
+| Setting          | File          | Default                              |
+| ---------------- | ------------- | ------------------------------------ |
+| `perModality`    | `retrieve.ts` | 50 rows per list                     |
+| `minSimilarity`  | `fuse.ts`     | 0.65 transcript and OCR, 0.55 visual |
+| `defaultWeights` | `fuse.ts`     | 1.0 / 1.0 / 0.8 / 0.6                |
+| `rrfK`           | `fuse.ts`     | 60                                   |
+| `rerankTop`      | `rerank.ts`   | 20                                   |
+| `minRerankScore` | `rerank.ts`   | 0.3                                  |
+| `mergeGapMs`     | `clips.ts`    | 1000                                 |
+| `maxClipMs`      | `clips.ts`    | 90000                                |
+| `mergeRatio`     | `clips.ts`    | 0.9 of the seed's relevance          |
+| `padMs`          | `snap.ts`     | 400                                  |
 
 All of these come from a handful of synthetic test videos. The M3 evals will tune them.
 
