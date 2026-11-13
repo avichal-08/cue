@@ -26,12 +26,19 @@ const icons = {
       <path d="M8 11V3M4.5 6.5 8 3l3.5 3.5M3 13h10" />
     </svg>
   ),
+  jobs: (
+    <svg viewBox="0 0 16 16" aria-hidden>
+      <circle cx="8" cy="8" r="5.5" />
+      <path d="M8 5v3.5M8 10.8v.2" />
+    </svg>
+  ),
 };
 
 const links = [
   { href: '/search', label: 'Search', icon: icons.search },
   { href: '/videos', label: 'Library', icon: icons.library },
   { href: '/upload', label: 'Upload', icon: icons.upload },
+  { href: '/jobs', label: 'Failed jobs', icon: icons.jobs },
 ];
 
 interface Counts {
