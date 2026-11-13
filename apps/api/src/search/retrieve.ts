@@ -6,6 +6,7 @@ import {
   defaultWeights,
   fuse,
   minSimilarity,
+  modalities as allModalities,
   type Fused,
   type Modality,
   type Ranked,
@@ -64,14 +65,24 @@ export async function retrieve(
   text: string,
   vector: number[] | undefined,
   filters: QueryFilters,
-  { limit = perModality, weights = defaultWeights, floors = minSimilarity } = {},
+  {
+    limit = perModality,
+    weights = defaultWeights,
+    floors = minSimilarity,
+    use = allModalities,
+  }: {
+    limit?: number;
+    weights?: Record<Modality, number>;
+    floors?: Partial<Record<Modality, number>>;
+    use?: readonly Modality[];
+  } = {},
 ): Promise<Retrieval> {
   const started = performance.now();
   const literal = vector ? `[${vector.join(',')}]` : undefined;
   const vectorModalities = literal
-    ? (Object.keys(vectorColumns) as (keyof typeof vectorColumns)[])
+    ? (Object.keys(vectorColumns) as (keyof typeof vectorColumns)[]).filter((m) => use.includes(m))
     : [];
-  const useKeyword = text.trim().length > 0;
+  const useKeyword = use.includes('keyword') && text.trim().length > 0;
 
   const results = await db.batch([
     db.execute(sql`set local hnsw.iterative_scan = relaxed_order`),

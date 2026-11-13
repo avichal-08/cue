@@ -4,9 +4,9 @@ import { inArray } from 'drizzle-orm';
 import { HttpError } from '../errors';
 import { mergeIntoClips, type ClipPart } from './clips';
 import { embedQuery } from './embed-query';
-import type { Match, Modality } from './fuse';
+import { modalities, type Match, type Modality } from './fuse';
 import { parseQuery, type QueryFilters } from './query';
-import { rerank, type CandidateRow, type Reranked } from './rerank';
+import { rerank, skipRerank, type CandidateRow, type Reranked } from './rerank';
 import { rerankWithKeyframes } from './rerank-visual';
 import { retrieve } from './retrieve';
 import { loadWordsAround, snapToWords } from './snap';
@@ -18,6 +18,8 @@ export interface SearchRequest {
   toMs?: number;
   limit: number;
   keyframes: boolean;
+  modalities?: Modality[];
+  rerank?: boolean;
 }
 
 export interface SearchTimings {
@@ -64,10 +66,14 @@ export async function runSearch(request: SearchRequest) {
   if (!parsed.text) throw new HttpError(400, 'query has no search text');
 
   const query = await embedQuery(parsed.text);
-  const retrieval = await retrieve(parsed.text, query.vector, filters);
-  const reranked = request.keyframes
-    ? await rerankWithKeyframes(parsed.text, retrieval.hits)
-    : await rerank(parsed.text, retrieval.hits);
+  const use = request.modalities?.length ? request.modalities : modalities;
+  const retrieval = await retrieve(parsed.text, query.vector, filters, { use });
+  const reranked =
+    request.rerank === false
+      ? await skipRerank(retrieval.hits)
+      : request.keyframes
+        ? await rerankWithKeyframes(parsed.text, retrieval.hits)
+        : await rerank(parsed.text, retrieval.hits);
 
   const clipsStarted = performance.now();
   const parts: Part[] = reranked.hits.flatMap((hit, i) => {
@@ -153,6 +159,7 @@ export async function runSearch(request: SearchRequest) {
       rerankModel: reranked.model ?? null,
       rerankError: reranked.error ?? null,
       keyframes: request.keyframes,
+      modalities: use,
       timings,
     },
   };

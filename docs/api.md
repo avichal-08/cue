@@ -99,8 +99,10 @@ A comment line is sent every 15 s to keep the connection open.
 
 ### POST /search
 
-Body: `{ q: string (1-500), videoId?, fromMs?, toMs?, limit?: 1-50 (10), keyframes?: boolean (false) }`.
+Body: `{ q: string (1-500), videoId?, fromMs?, toMs?, limit?: 1-50 (10), keyframes?: boolean (false), modalities?: ("transcript" | "ocr" | "visual" | "keyword")[], rerank?: boolean (true) }`.
 `q` may contain `video:<id>`, `from:<time>` and `to:<time>` filters; body fields override them.
+
+`modalities` limits retrieval to the listed signals, and all four are used when it's left out. `rerank: false` skips the model and keeps the fused order. Both exist for ablations: the UI never sets them. `meta.modalities` echoes the signals used.
 
 `200 { query, filters, clips: [...], meta: {...} }`. See [components/search](components/search.md)
 for the full clip shape. 400 when there is no search text, 429 when Gemini is rate limited, 503

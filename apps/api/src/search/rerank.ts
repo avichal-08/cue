@@ -85,6 +85,13 @@ export async function loadCandidates(ids: string[]): Promise<Map<string, Candida
   return new Map(rows.map((r) => [r.segmentId, r]));
 }
 
+export async function skipRerank(hits: Fused[], top = rerankTop): Promise<RerankOutcome> {
+  const started = performance.now();
+  const pool = hits.slice(0, top);
+  const rows = await loadCandidates(pool.map((h) => h.segmentId));
+  return { hits: pool, rows, applied: false, ms: performance.now() - started };
+}
+
 export async function rerank(
   query: string,
   hits: Fused[],
