@@ -21,6 +21,7 @@ export interface CandidateRow {
 export interface Reranked extends Fused {
   rerankScore?: number;
   reason?: string;
+  held?: boolean;
 }
 
 export interface RerankOutcome {
@@ -49,21 +50,35 @@ export function candidateFor(row: CandidateRow, image?: Buffer): RerankCandidate
 export const hasEvidence = (row: CandidateRow, image?: Buffer) =>
   Boolean(row.transcriptText?.trim() || row.ocrText?.trim() || image);
 
+export const seenOnly = (hit: Fused) =>
+  Boolean(hit.matches.visual) &&
+  !hit.matches.transcript &&
+  !hit.matches.ocr &&
+  !hit.matches.keyword;
+
 export function applyRerank(
   hits: Fused[],
   results: RerankResult[],
-  minScore = minRerankScore,
+  { minScore = minRerankScore, held = new Set<string>() } = {},
 ): Reranked[] {
   const scored = new Map(results.map((r) => [r.id, r]));
   const kept: Reranked[] = [];
   const unscored: Reranked[] = [];
   for (const hit of hits) {
     const r = scored.get(hit.segmentId);
+    if (held.has(hit.segmentId)) continue;
     if (!r) unscored.push(hit);
     else if (r.score >= minScore) kept.push({ ...hit, rerankScore: r.score, reason: r.reason });
   }
   kept.sort((a, b) => b.rerankScore! - a.rerankScore! || b.score - a.score);
-  return [...kept, ...unscored];
+
+  const out: Reranked[] = [];
+  let next = 0;
+  for (const hit of hits) {
+    if (held.has(hit.segmentId)) out.push({ ...hit, held: true });
+    else if (scored.has(hit.segmentId) && next < kept.length) out.push(kept[next++]!);
+  }
+  return [...out, ...unscored];
 }
 
 export async function loadCandidates(ids: string[]): Promise<Map<string, CandidateRow>> {
@@ -107,12 +122,21 @@ export async function rerank(
   try {
     const ordered = pool.map((h) => rows.get(h.segmentId)).filter((r) => r !== undefined);
     const pictures = images ? await images(ordered) : new Map<string, Buffer>();
+    const held = new Set(
+      pool.filter((h) => seenOnly(h) && !pictures.has(h.segmentId)).map((h) => h.segmentId),
+    );
     const candidates = ordered
-      .filter((r) => hasEvidence(r, pictures.get(r.segmentId)))
+      .filter((r) => !held.has(r.segmentId) && hasEvidence(r, pictures.get(r.segmentId)))
       .map((r) => candidateFor(r, pictures.get(r.segmentId)));
     if (!candidates.length) return { hits: pool, rows, applied: false, model: model.id, ms: ms() };
     const results = await model.rerank(query, candidates, candidates.length);
-    return { hits: applyRerank(pool, results), rows, applied: true, model: model.id, ms: ms() };
+    return {
+      hits: applyRerank(pool, results, { held }),
+      rows,
+      applied: true,
+      model: model.id,
+      ms: ms(),
+    };
   } catch (err) {
     const error = err instanceof Error ? err.message.slice(0, 200) : String(err);
     console.warn(`[search] rerank failed, keeping fused order: ${error}`);

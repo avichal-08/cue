@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Fused } from '../src/search/fuse';
-import { applyRerank, candidateFor, hasEvidence, type CandidateRow } from '../src/search/rerank';
+import {
+  applyRerank,
+  candidateFor,
+  hasEvidence,
+  seenOnly,
+  type CandidateRow,
+} from '../src/search/rerank';
 
 const hit = (segmentId: string, score: number): Fused => ({ segmentId, score, matches: {} });
 const hits = [hit('a', 0.05), hit('b', 0.04), hit('c', 0.03), hit('d', 0.02)];
@@ -30,6 +36,23 @@ describe('applyRerank', () => {
   it('keeps candidates the reranker did not score, after the scored ones, in fused order', () => {
     const out = applyRerank(hits, [{ id: 'c', score: 0.8 }]);
     expect(out.map((h) => h.segmentId)).toEqual(['c', 'a', 'b', 'd']);
+  });
+
+  it('keeps held candidates in their fused slot and reorders the rest around them', () => {
+    const out = applyRerank(
+      hits,
+      [
+        { id: 'a', score: 0.4 },
+        { id: 'c', score: 0.9 },
+        { id: 'd', score: 0.1 },
+      ],
+      { held: new Set(['b']) },
+    );
+    expect(out.map((h) => [h.segmentId, h.held ?? false])).toEqual([
+      ['c', false],
+      ['b', true],
+      ['a', false],
+    ]);
   });
 
   it('breaks rerank ties by the fused score', () => {
@@ -84,5 +107,14 @@ describe('hasEvidence', () => {
     expect(hasEvidence(row, Buffer.from('x'))).toBe(true);
     expect(hasEvidence({ ...row, transcriptText: 'hello' })).toBe(true);
     expect(hasEvidence({ ...row, ocrText: 'Slide' })).toBe(true);
+  });
+});
+
+describe('seenOnly', () => {
+  const m = { rank: 1, score: 0.6 };
+  it('is true only when the frame is the sole match', () => {
+    expect(seenOnly({ segmentId: 's', score: 0, matches: { visual: m } })).toBe(true);
+    expect(seenOnly({ segmentId: 's', score: 0, matches: { visual: m, keyword: m } })).toBe(false);
+    expect(seenOnly({ segmentId: 's', score: 0, matches: { transcript: m } })).toBe(false);
   });
 });

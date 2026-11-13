@@ -86,7 +86,7 @@ export async function runSearch(request: SearchRequest) {
             startMs: row.startMs,
             endMs: row.endMs,
             rank: i + 1,
-            relevance: hit.rerankScore ?? (reranked.applied ? 0 : hit.score),
+            relevance: hit.rerankScore ?? (reranked.applied && !hit.held ? 0 : hit.score),
             hit,
             row,
           },

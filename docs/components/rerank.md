@@ -22,12 +22,14 @@ query ─► embed ─► retrieve (4 lists, floors, RRF) ─► rerank ─► c
 1. Take the top `rerankTop` (20) fused hits. Everything below is not considered.
 2. Load each one's video title, time range, transcript, OCR text and keyframe key in one query.
 3. In keyframe mode, download each keyframe from storage, in parallel.
-4. Drop candidates with no evidence: no transcript, no OCR text and no keyframe image. They are
-   not sent to the model and keep their fused position (see [Evidence rule](#evidence-rule)).
+4. Hold back what the model can't judge: candidates with no transcript, OCR text or image, and
+   in text mode, candidates that only matched by their keyframe. They are not sent to the model
+   and keep their fused slot (see [Evidence rule](#evidence-rule)).
 5. Send the rest to Gemini Flash in one `generateContent` call.
-6. Reorder: candidates scored at least `minRerankScore` (0.3) come first, highest score first,
-   ties broken by the fused score. Candidates below the floor are removed. Candidates the model
-   did not return keep their fused order after the scored ones.
+6. Reorder: held candidates stay in their fused slots. The slots of the judged candidates are
+   refilled with those scored at least `minRerankScore` (0.3), highest score first, ties broken
+   by the fused score. Judged candidates below the floor are removed. Candidates the model did
+   not return go last, in fused order.
 7. If anything fails, return the fused order unchanged.
 
 ## What the model sees
@@ -81,7 +83,7 @@ why it was judged relevant.
 |                      | Text (`rerank`)                   | Keyframes (`rerankWithKeyframes`)            |
 | -------------------- | --------------------------------- | -------------------------------------------- |
 | Model sees           | title, time, transcript, OCR text | the same, plus each candidate's keyframe     |
-| Judges visual scenes | no, they are passed through       | yes                                          |
+| Judges visual scenes | no, they keep their fused slot    | yes                                          |
 | Latency (measured)   | 1.6 to 2.6 s                      | 1.7 to 8.7 s, mostly image upload and decode |
 | Quota                | one Flash call                    | one Flash call with up to 20 images          |
 
@@ -97,6 +99,14 @@ range. In testing the model then guessed from the video title: the same blue-scr
 a video titled "colours" scored 1.0 on one run and 0.5 ("possibly including blue") on the next.
 Passing such segments through unscored keeps the visual match retrieval found, without a
 made-up score.
+
+In text mode the same holds for any candidate that retrieval found only by its keyframe, with
+no transcript, OCR or keyword match, even if it has some speech. On MSR-VTT, where most clips
+are visual with unrelated music or chatter, the text model read that speech, scored the right
+clip below 0.3 and dropped it in 30 of 100 queries, which cut recall@1 from 55% to 39%
+([results](../results.md#msr-vtt)). Such a candidate now keeps its fused slot, and the judged
+candidates are reordered around it. In keyframe mode the model sees the image, so these
+candidates are judged like any other.
 
 ## Failure behaviour
 
@@ -121,8 +131,9 @@ latency logs.
 | `maxCandidateChars`  | `gemini.ts` | 800                     | text per candidate sent to the model           |
 | `GEMINI_FLASH_MODEL` | env         | `gemini-3.5-flash-lite` | model used, shared with OCR                    |
 
-The two thresholds are first guesses from synthetic test videos and will be tuned by the M3
-evals, together with the retrieval floors and weights.
+`minRerankScore` is still a first guess from synthetic test videos. On the demo set it rarely
+drops a right answer; on visual footage it did, which is why frame-only matches are held back
+in text mode.
 
 ## Limits
 
@@ -143,4 +154,4 @@ evals, together with the retrieval floors and weights.
   reply, top-k, prompt wording, the request shape with an inline image, no call for no
   candidates, broken JSON.
 - `apps/api/test/rerank.test.ts`: ordering and reasons, the score floor, unscored candidates,
-  tie breaks, candidate text, the evidence rule.
+  held candidates keeping their slot, tie breaks, candidate text, the evidence rule.
