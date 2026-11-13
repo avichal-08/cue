@@ -7,3 +7,4 @@ dist
 .turbo
 .DS_Store
 next-env.d.ts
+apps/eval/results

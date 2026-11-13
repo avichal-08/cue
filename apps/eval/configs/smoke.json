@@ -1,0 +1,7 @@
+{
+  "name": "smoke",
+  "description": "Harness check against the local demo library. Video-level recall only.",
+  "dataset": "../datasets/local-smoke.json",
+  "search": { "limit": 10, "keyframes": false },
+  "k": [1, 5, 10]
+}
