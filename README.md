@@ -5,6 +5,20 @@ Multimodal video search. Upload hours of video, ask in plain language, get back 
 Cue indexes what is said (transcript), shown (frames) and written on screen (OCR), then answers queries with hybrid vector + keyword retrieval, a reranker and short answers that
 cite the exact moments.
 
+## Results
+
+On 37 hand-labelled moments in a 6-video library of short talks, explainers and a screen recording:
+
+| signals                           | right video | starts within 5 s | clip IoU ≥ 0.3 | p50 search | cost / 1k searches |
+| --------------------------------- | ----------- | ----------------- | -------------- | ---------- | ------------------ |
+| transcript only                   | 94.6%       | 40.5%             | 62.2%          | 0.7 s      | $0                 |
+| + frames, on-screen text, keyword | 100%        | 78.4%             | 70.3%          | 0.8 s      | $0                 |
+| **+ rerank** (default)            | **100%**    | **83.8%**         | **91.9%**      | 3.1 s      | $1.41              |
+
+Indexing takes **87 min per hour of video** and costs **$0.42 per hour** at paid-tier prices, mostly OCR. Everything here runs on free tiers.
+
+The set is small and built on the demo library, so read it as evidence of what each part adds rather than a benchmark score; a public benchmark (MSR-VTT) is next. [docs/results.md](docs/results.md) has every table, including each signal on its own, latency by phase and cost by operation. [docs/evals.md](docs/evals.md) covers how to rerun them.
+
 ![cue high level design](docs/diagrams/architecture.png)
 
 ## Stack
@@ -71,6 +85,7 @@ Search runs filters, hybrid retrieval, rerank and clip assembly on every query.
 | [docs/api.md](docs/api.md)                   | every HTTP endpoint                 |
 | [docs/local.md](docs/local.md)               | running it on your machine          |
 | [docs/deploy.md](docs/deploy.md)             | running it on any linux vm          |
+| [docs/results.md](docs/results.md)           | eval results: quality, speed, cost  |
 | [docs/evals.md](docs/evals.md)               | running and reading evals           |
 | [docs/components](docs/components/README.md) | how search, rerank and answers work |
 | [docs/decisions](docs/decisions/README.md)   | why the big choices were made       |
@@ -85,5 +100,7 @@ Ingest and search work end to end:
 - **Search**: hybrid retrieval, rerank with reasons, clips snapped to word boundaries, grounded
   answers with clickable citations.
 
-Next: evals (retrieval recall, timestamp accuracy, ablations, cost and latency), then hardening
-and a shorts generator. Ranking thresholds are still first guesses until the evals tune them.
+- **Evals**: a labelled timestamp set, signal ablations, per-call cost tracking, and ingest and
+  search speed. Results are above.
+
+Next: a public benchmark (MSR-VTT), faster OCR, then hardening and a shorts generator.
