@@ -1,5 +1,6 @@
 export const mergeGapMs = 1_000;
 export const maxClipMs = 90_000;
+export const mergeRatio = 0.9;
 
 export interface ClipPart {
   segmentId: string;
@@ -7,6 +8,7 @@ export interface ClipPart {
   startMs: number;
   endMs: number;
   rank: number;
+  relevance: number;
 }
 
 export interface Clip<T extends ClipPart> {
@@ -19,30 +21,43 @@ export interface Clip<T extends ClipPart> {
 
 export function mergeIntoClips<T extends ClipPart>(
   hits: T[],
-  { gapMs = mergeGapMs, maxMs = maxClipMs } = {},
+  { gapMs = mergeGapMs, maxMs = maxClipMs, ratio = mergeRatio } = {},
 ): Clip<T>[] {
-  const byVideo = new Map<string, T[]>();
-  for (const hit of hits) byVideo.set(hit.videoId, [...(byVideo.get(hit.videoId) ?? []), hit]);
-
+  const byRank = [...hits].sort((a, b) => a.rank - b.rank);
+  const used = new Set<T>();
   const clips: Clip<T>[] = [];
-  for (const [videoId, list] of byVideo) {
-    let current: Clip<T> | undefined;
-    for (const hit of [...list].sort((a, b) => a.startMs - b.startMs)) {
-      const fits =
-        current &&
-        hit.startMs - current.endMs <= gapMs &&
-        Math.max(current.endMs, hit.endMs) - current.startMs <= maxMs;
-      if (current && fits) {
-        current.endMs = Math.max(current.endMs, hit.endMs);
-        current.rank = Math.min(current.rank, hit.rank);
-        current.parts.push(hit);
-      } else {
-        current = { videoId, startMs: hit.startMs, endMs: hit.endMs, rank: hit.rank, parts: [hit] };
-        clips.push(current);
-      }
+
+  for (const seed of byRank) {
+    if (used.has(seed)) continue;
+    used.add(seed);
+    const clip: Clip<T> = { ...seed, parts: [seed] };
+    const floor = seed.relevance * ratio;
+
+    for (;;) {
+      const next = byRank.find(
+        (h) =>
+          !used.has(h) &&
+          h.videoId === clip.videoId &&
+          h.relevance >= floor &&
+          h.startMs - clip.endMs <= gapMs &&
+          clip.startMs - h.endMs <= gapMs &&
+          Math.max(clip.endMs, h.endMs) - Math.min(clip.startMs, h.startMs) <= maxMs,
+      );
+      if (!next) break;
+      used.add(next);
+      clip.startMs = Math.min(clip.startMs, next.startMs);
+      clip.endMs = Math.max(clip.endMs, next.endMs);
+      clip.parts.push(next);
     }
+
+    clips.push({
+      videoId: clip.videoId,
+      startMs: clip.startMs,
+      endMs: clip.endMs,
+      rank: seed.rank,
+      parts: clip.parts,
+    });
   }
 
-  for (const clip of clips) clip.parts.sort((a, b) => a.rank - b.rank);
-  return clips.sort((a, b) => a.rank - b.rank);
+  return clips;
 }
