@@ -46,7 +46,8 @@ export function gitCommit(): string | null {
 }
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
-const value = (m: MetricResult) => (m.format === 'pct' ? pct(m.value) : m.value.toFixed(3));
+const value = (m: MetricResult) =>
+  m.n === 0 ? 'n/a' : m.format === 'pct' ? pct(m.value) : m.value.toFixed(3);
 const ms = (n: number | null) => (n === null ? 'n/a' : `${n} ms`);
 const cell = (s: string) => s.replace(/\|/g, '\\|').replace(/\s+/g, ' ');
 const row = (cells: (string | number)[]) => `| ${cells.join(' | ')} |`;
@@ -104,10 +105,13 @@ function queryTable({ runs }: VariantResult) {
   ];
 }
 
-const atOne = (name: string) => name === 'mrr' || /@1( |$)/.test(name);
+const compared = (name: string) =>
+  name === 'mrr' || name.startsWith('recall@') || /@1( |$)/.test(name);
 
 export function ablationTable(variants: VariantResult[]) {
-  const names = Object.keys(variants[0]?.summary.metrics ?? {}).filter(atOne);
+  const names = Object.keys(variants[0]?.summary.metrics ?? {}).filter(
+    (name) => compared(name) && variants.some((v) => v.summary.metrics[name]?.n),
+  );
   return [
     row(['variant', 'signals', 'rerank', ...names, 'p50', 'p95', 'cost / 1k', 'not reranked']),
     row(Array.from({ length: names.length + 7 }, () => '---')),

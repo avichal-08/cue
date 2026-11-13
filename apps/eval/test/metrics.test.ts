@@ -111,13 +111,18 @@ describe('summarize', () => {
     const runs = [
       run([hit('v2')], undefined, { latencyMs: 100 }),
       run([], undefined, { latencyMs: null, error: 'boom', reranked: false }),
-      run([hit('v1')], undefined, { latencyMs: 300, reranked: false }),
+      run([hit('v1')], undefined, { latencyMs: 300, reranked: false, rerankError: '429' }),
     ];
     const s = summarize(runs, [recallAt(1), mrr]);
     expect(s.metrics['recall@1']).toEqual({ value: 1 / 3, n: 3, format: 'pct' });
     expect(s.errors).toBe(1);
     expect(s.unreranked).toBe(1);
     expect(s.latencyMs).toEqual({ p50: 100, p95: 300, mean: 200 });
+  });
+
+  it('does not count a rerank with nothing to score as a failure', () => {
+    const runs = [run([hit('v2')], undefined, { reranked: false })];
+    expect(summarize(runs, [mrr]).unreranked).toBe(0);
   });
 
   it('does not count a variant with rerank off as unreranked', () => {

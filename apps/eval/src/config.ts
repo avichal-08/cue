@@ -23,6 +23,7 @@ const configSchema = z.object({
     .min(1)
     .refine((v) => new Set(v.map((x) => x.name)).size === v.length, 'variant names must be unique')
     .optional(),
+  rankBy: z.enum(['clip', 'video']).default('clip'),
   k: z.array(z.number().int().min(1)).nonempty().default([1, 5, 10]),
   windowSec: z.number().min(0).default(5),
   iou: z.array(z.number().gt(0).max(1)).default([0.3, 0.5]),

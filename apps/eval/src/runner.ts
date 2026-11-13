@@ -15,6 +15,7 @@ export interface QueryRun {
   expect: ResolvedTarget[];
   hits: SearchHit[];
   reranked: boolean;
+  rerankError?: string;
   rerankWanted: boolean;
   attempts: number;
   latencyMs: number | null;
@@ -67,6 +68,12 @@ export interface RunOptions {
   concurrency: number;
   retries: number;
   retryDelayMs: number;
+  rankBy: 'clip' | 'video';
+}
+
+export function firstPerVideo(hits: SearchHit[]) {
+  const seen = new Set<string>();
+  return hits.filter((h) => !seen.has(h.videoId) && seen.add(h.videoId));
 }
 
 export async function runQueries(
@@ -84,16 +91,18 @@ export async function runQueries(
     for (let attempt = 1; ; attempt++) {
       try {
         const result = await api.search({ q: query.q, ...search, rerank: rerankWanted });
+        const hits = result.clips.map(({ videoId, title, startMs, endMs, score }) => ({
+          videoId,
+          title,
+          startMs,
+          endMs,
+          score,
+        }));
         run = {
           ...base,
-          hits: result.clips.map(({ videoId, title, startMs, endMs, score }) => ({
-            videoId,
-            title,
-            startMs,
-            endMs,
-            score,
-          })),
+          hits: options.rankBy === 'video' ? firstPerVideo(hits) : hits,
           reranked: result.meta.reranked,
+          ...(result.meta.rerankError ? { rerankError: result.meta.rerankError } : {}),
           attempts: attempt,
           latencyMs: result.meta.timings.totalMs,
           timings: result.meta.timings,
@@ -108,7 +117,7 @@ export async function runQueries(
           error: (err as Error).message,
         };
       }
-      const retry = run.error || (rerankWanted && !run.reranked);
+      const retry = run.error || (rerankWanted && run.rerankError);
       if (!retry || attempt > options.retries) break;
       await sleep(options.retryDelayMs);
     }
