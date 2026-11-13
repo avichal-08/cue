@@ -67,15 +67,19 @@ The rerank is most of a search's time and all of its cost.
 
 `pnpm eval:msrvtt 100 && pnpm eval msrvtt` runs text-to-video retrieval on 100 clips, evenly spaced through the standard 1k-A test split. Each caption is a query, and the clip it describes is the only right answer. Results are ranked by video, with the 6 demo videos left in as extra distractors.
 
-| variant                 | recall@1 | recall@5 | recall@10 | mrr   | p50   |
-| ----------------------- | -------- | -------- | --------- | ----- | ----- |
-| frames only             | 59%      | 82%      | 88%       | 0.697 | 0.5 s |
-| all signals, fused      | **55%**  | **82%**  | **86%**   | 0.671 | 0.6 s |
-| + text rerank (default) | 39%      | 57%      | 59%       | 0.467 | 3.1 s |
+| variant                       | recall@1 | recall@5 | recall@10 | mrr   | p50   |
+| ----------------------------- | -------- | -------- | --------- | ----- | ----- |
+| frames only                   | 59%      | 82%      | 88%       | 0.697 | 0.5 s |
+| all signals, fused            | **55%**  | **82%**  | **86%**   | 0.671 | 0.6 s |
+| + text rerank, before the fix | 39%      | 57%      | 59%       | 0.467 | 3.1 s |
+| + text rerank, after the fix¹ | 55%      | 82%      | 86%       | 0.671 | 1.1 s |
+
+¹ Partly measured. 68 queries had only frame-matched candidates, so the rerank now leaves them in fused order by design. The other 32 needed the model, and every call hit a spent daily Flash-Lite quota and kept the fused order too. The row is therefore fused search plus the rule, not a full measurement of the reranker.
 
 - **A 100-clip gallery is 10× easier than the full 1,000.** Published 1k-A numbers aren't comparable.
 - **Frames do the work.** Most clips are cooking, sports, music or gameplay with little useful speech. Adding transcript, on-screen text and keyword search to frames costs 4 points of recall@1.
-- **The text rerank hurts here.** It reads only transcripts and on-screen text, so it can't see why a visual match is right. In 30 of the 100 queries it scored the right clip below its cutoff and dropped it, and in 11 more it pushed it down; it helped in 8. 6 reranks failed on rate limits and kept the fused order. Since then, the text rerank keeps candidates matched only by their frame in their fused slot instead of judging them ([rerank: evidence rule](components/rerank.md#evidence-rule)). The row above is from before that change; it will be rerun once the free-tier quota resets.
-- **Keyframes in the rerank** couldn't be measured: the free-tier Flash-Lite quota ran out after the first query.
+- **The text rerank used to hurt here.** It reads only transcripts and on-screen text, so it can't see why a visual match is right. In 30 of the 100 queries it scored the right clip below its cutoff and dropped it, and in 11 more it pushed it down; it helped in 8.
+- **The fix.** The text rerank now keeps candidates matched only by their frame in their fused slot instead of judging them ([rerank: evidence rule](components/rerank.md#evidence-rule)). On 68 of the 100 queries that means no rerank call at all, so those can no longer lose the right clip. Whether the rerank helps or hurts on the other 32 is still open.
+- **Keyframes in the rerank** couldn't be measured: in both runs the free-tier Flash-Lite quota ran out within the first few queries.
 - **The visual floor.** Before it was lowered from 0.65 to 0.55, fused recall@1 was 35% and recall@10 only 41%, because the floor discarded two thirds of the true frame matches ([search: fusion](components/search.md#4-fusion)).
 - **Ingest.** The 100 clips (about 25 minutes of video) indexed with no failures.
