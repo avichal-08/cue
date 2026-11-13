@@ -1,0 +1,21 @@
+{
+  "name": "@cue/eval",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "eval": "tsx src/cli.ts",
+    "typecheck": "tsc",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@cue/eslint-config": "workspace:*",
+    "@cue/tsconfig": "workspace:*",
+    "@types/node": "^22.10.0",
+    "eslint": "^10.12.0",
+    "vitest": "^5.0.5"
+  }
+}
