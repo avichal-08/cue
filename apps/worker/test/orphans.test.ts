@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abandonAfterMs, planCleanup, videoIdOf } from '../src/cleanup';
+import { abandonAfterMs, planCleanup, videoIdOf } from '../src/orphans';
 
 const now = Date.UTC(2026, 10, 13);
 const row = (id: string, over: Partial<Parameters<typeof planCleanup>[1][number]> = {}) => ({
